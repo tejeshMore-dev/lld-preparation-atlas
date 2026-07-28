@@ -2,6 +2,7 @@ from typing import Optional
 
 from models.enums import SpotType
 from models.vehicle import Vehicle
+from models.enums import VehicleType
 
 
 SIZE_RANK = {
@@ -27,7 +28,6 @@ class ParkingSpot:
         self.vehicle: Optional[Vehicle] = None
 
     def can_fit_vehicle(self, vehicle: Vehicle) -> bool:
-        from models.enums import VehicleType
 
         if vehicle.vehicle_type == VehicleType.MOTORCYCLE:
             return SIZE_RANK[self.spot_type] >= SIZE_RANK[SpotType.REGULAR]

@@ -18,7 +18,7 @@ def build_parking_lot():
     pricing_strategy = WeekendSurchargeDecorator(HourlySlabStratergy(), surcharge_percentage=20)
     payment_processor = UPIPaymentProcessor()
 
-    parking_lot =ParkingLot("My Parking Lot", allocation_strategy, pricing_strategy, payment_processor)
+    parking_lot = ParkingLot("My Parking Lot", allocation_strategy, pricing_strategy, payment_processor)
 
     floor1 = ParkingFloor(1) 
     floor1.add_spot( ParkingSpot( "A1", SpotType.COMPACT, distance_from_entrance=5, floor_number=floor1.floor_id ) ) 
