@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from models.enums import PaymentStatus, PaymentMethod
+from models.enums import PaymentMethod, PaymentStatus
+
 
 @dataclass
 class Receipt:
@@ -12,15 +13,15 @@ class Receipt:
     amount: float
     date: datetime
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
-            f"\n"
-            f"========== RECEIPT ==========\n"
+            "\n"
+            "========== RECEIPT ==========\n"
             f"Receipt ID     : {self.receipt_id}\n"
             f"Ticket ID      : {self.ticket_id}\n"
-            f"Amount Paid    : ₹{self.amount:.2f}\n"
+            f"Amount Paid    : INR {self.amount:.2f}\n"
             f"Payment Method : {self.payment_method.name}\n"
             f"Status         : {self.status.name}\n"
             f"Paid At        : {self.date:%d-%m-%Y %H:%M:%S}\n"
-            f"============================="
+            "============================="
         )

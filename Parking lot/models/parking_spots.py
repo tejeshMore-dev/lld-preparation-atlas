@@ -1,8 +1,7 @@
 from typing import Optional
 
-from models.enums import SpotType
+from models.enums import SpotType, VehicleType
 from models.vehicle import Vehicle
-from models.enums import VehicleType
 
 
 SIZE_RANK = {
@@ -28,25 +27,29 @@ class ParkingSpot:
         self.vehicle: Optional[Vehicle] = None
 
     def can_fit_vehicle(self, vehicle: Vehicle) -> bool:
+        required_spot = {
+            VehicleType.MOTORCYCLE: SpotType.REGULAR,
+            VehicleType.CAR: SpotType.COMPACT,
+            VehicleType.TRUCK: SpotType.LARGE,
+        }[vehicle.vehicle_type]
+        return SIZE_RANK[self.spot_type] >= SIZE_RANK[required_spot]
 
-        if vehicle.vehicle_type == VehicleType.MOTORCYCLE:
-            return SIZE_RANK[self.spot_type] >= SIZE_RANK[SpotType.REGULAR]
-
-        if vehicle.vehicle_type == VehicleType.CAR:
-            return SIZE_RANK[self.spot_type] >= SIZE_RANK[SpotType.COMPACT]
-
-        return SIZE_RANK[self.spot_type] >= SIZE_RANK[SpotType.LARGE]       
-
-    def assign(self, vehicle: Vehicle):
+    def assign(self, vehicle: Vehicle) -> None:
         if self.is_occupied:
-            raise Exception(f"Parking spot {self.spot_id} is already occupied.")
+            raise ValueError(f"Parking spot {self.spot_id} is already occupied")
+        if not self.can_fit_vehicle(vehicle):
+            raise ValueError(
+                f"Vehicle {vehicle.license_plate} does not fit spot {self.spot_id}"
+            )
 
         self.vehicle = vehicle
         self.is_occupied = True
 
-    def vacate(self, vehicle: Vehicle):
+    def vacate(self, vehicle: Vehicle) -> None:
         if not self.is_occupied or self.vehicle != vehicle:
-            raise Exception(f"Parking spot {self.spot_id} is not occupied by this vehicle.")
+            raise ValueError(
+                f"Parking spot {self.spot_id} is not occupied by this vehicle"
+            )
 
         self.vehicle = None
         self.is_occupied = False
