@@ -7,8 +7,9 @@ explanations and tests inside each solution.
 
 | Solution | Concepts covered | Links |
 |---|---|---|
-| Parking Lot | Strategy, Decorator, dependency injection, allocation, pricing, payments, state management, thread safety | [Open solution](./Parking%20lot/) · [Read guide](./Parking%20lot/README.md) |
-| Library Management | Strategy, Factory, Observer, inheritance, catalog search, loans, fines, FIFO reservations, state machines | [Open solution](./library%20management/) · [Read guide](./library%20management/README.md) |
+| Parking Lot | Strategy, Decorator, dependency injection, allocation, pricing, payments, state management, thread safety | [Open solution](./Parking%20lot/) / [Read guide](./Parking%20lot/README.md) |
+| Library Management | Strategy, Factory, Observer, inheritance, catalog search, loans, fines, FIFO reservations, state machines | [Open solution](./library%20management/) / [Read guide](./library%20management/README.md) |
+| Splitwise | Strategy, Factory, precise money, equal/exact/percentage splits, debt netting, settlements, simplification | [Open solution](./Splitwise/) / [Read guide](./Splitwise/README.md) |
 
 ## Requirements
 
@@ -22,6 +23,7 @@ From the repository root:
 ```powershell
 python "Parking lot/main.py"
 python "library management/main.py"
+python "Splitwise/main.py"
 ```
 
 ## Run tests
@@ -29,6 +31,7 @@ python "library management/main.py"
 ```powershell
 python -m unittest discover -s "Parking lot/tests" -t "Parking lot" -v
 python -m unittest discover -s "library management/tests" -t "library management" -v
+python -m unittest discover -s "Splitwise/tests" -t "Splitwise" -v
 ```
 
 Each solution README contains its requirements, architecture, workflows, class
