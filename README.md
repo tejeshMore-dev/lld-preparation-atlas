@@ -15,6 +15,7 @@ explanations and tests inside each solution.
 | Movie Ticket Booking | Seat holds, concurrent double-booking protection, state machines, Strategy, Decorator, Gateway, exact money, refunds | [Open solution](./Movie%20Ticket%20Booking/) / [Read guide](./Movie%20Ticket%20Booking/README.md) |
 | Hotel Management | Date-range availability, room holds, concurrent reservation protection, Strategy, Decorator, folios, check-in/out, refunds | [Open solution](./Hotel%20Management/) / [Read guide](./Hotel%20Management/README.md) |
 | Airline Reservation | Per-flight seat inventory, concurrent booking protection, state machines, cabin pricing, check-in, boarding passes, flight operations | [Open solution](./Airline%20Reservation/) / [Read guide](./Airline%20Reservation/README.md) |
+| Cab Booking | Geospatial distance, pluggable driver matching, atomic dispatch, trip state machine, fare/surge strategies, payments, ratings | [Open solution](./Cab%20Booking/) / [Read guide](./Cab%20Booking/README.md) |
 
 ## Requirements
 
@@ -34,6 +35,7 @@ python "ATM/main.py"
 python "Movie Ticket Booking/main.py"
 python "Hotel Management/main.py"
 python "Airline Reservation/main.py"
+python "Cab Booking/main.py"
 ```
 
 ## Run tests
@@ -47,6 +49,7 @@ python -m unittest discover -s "ATM/tests" -t "ATM" -v
 python -m unittest discover -s "Movie Ticket Booking/tests" -t "Movie Ticket Booking" -v
 python -m unittest discover -s "Hotel Management/tests" -t "Hotel Management" -v
 python -m unittest discover -s "Airline Reservation/tests" -t "Airline Reservation" -v
+python -m unittest discover -s "Cab Booking/tests" -t "Cab Booking" -v
 ```
 
 Each solution README contains its requirements, architecture, workflows, class
