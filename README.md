@@ -11,6 +11,7 @@ explanations and tests inside each solution.
 | Library Management | Strategy, Factory, Observer, inheritance, catalog search, loans, fines, FIFO reservations, state machines | [Open solution](./library%20management/) / [Read guide](./library%20management/README.md) |
 | Splitwise | Strategy, Factory, precise money, equal/exact/percentage splits, debt netting, settlements, simplification | [Open solution](./Splitwise/) / [Read guide](./Splitwise/README.md) |
 | Elevator | Strategy, controller orchestration, scheduling, LOOK routing, request/state machines, discrete simulation, safety rules | [Open solution](./Elevator/) / [Read guide](./Elevator/README.md) |
+| ATM | State machines, secure PIN concepts, Gateway, Strategy, precise money, exact cash dispensing, transactions, compensation | [Open solution](./ATM/) / [Read guide](./ATM/README.md) |
 
 ## Requirements
 
@@ -26,6 +27,7 @@ python "Parking lot/main.py"
 python "library management/main.py"
 python "Splitwise/main.py"
 python "Elevator/main.py"
+python "ATM/main.py"
 ```
 
 ## Run tests
@@ -35,6 +37,7 @@ python -m unittest discover -s "Parking lot/tests" -t "Parking lot" -v
 python -m unittest discover -s "library management/tests" -t "library management" -v
 python -m unittest discover -s "Splitwise/tests" -t "Splitwise" -v
 python -m unittest discover -s "Elevator/tests" -t "Elevator" -v
+python -m unittest discover -s "ATM/tests" -t "ATM" -v
 ```
 
 Each solution README contains its requirements, architecture, workflows, class
