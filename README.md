@@ -13,6 +13,7 @@ explanations and tests inside each solution.
 | Elevator | Strategy, controller orchestration, scheduling, LOOK routing, request/state machines, discrete simulation, safety rules | [Open solution](./Elevator/) / [Read guide](./Elevator/README.md) |
 | ATM | State machines, secure PIN concepts, Gateway, Strategy, precise money, exact cash dispensing, transactions, compensation | [Open solution](./ATM/) / [Read guide](./ATM/README.md) |
 | Movie Ticket Booking | Seat holds, concurrent double-booking protection, state machines, Strategy, Decorator, Gateway, exact money, refunds | [Open solution](./Movie%20Ticket%20Booking/) / [Read guide](./Movie%20Ticket%20Booking/README.md) |
+| Hotel Management | Date-range availability, room holds, concurrent reservation protection, Strategy, Decorator, folios, check-in/out, refunds | [Open solution](./Hotel%20Management/) / [Read guide](./Hotel%20Management/README.md) |
 
 ## Requirements
 
@@ -30,6 +31,7 @@ python "Splitwise/main.py"
 python "Elevator/main.py"
 python "ATM/main.py"
 python "Movie Ticket Booking/main.py"
+python "Hotel Management/main.py"
 ```
 
 ## Run tests
@@ -41,6 +43,7 @@ python -m unittest discover -s "Splitwise/tests" -t "Splitwise" -v
 python -m unittest discover -s "Elevator/tests" -t "Elevator" -v
 python -m unittest discover -s "ATM/tests" -t "ATM" -v
 python -m unittest discover -s "Movie Ticket Booking/tests" -t "Movie Ticket Booking" -v
+python -m unittest discover -s "Hotel Management/tests" -t "Hotel Management" -v
 ```
 
 Each solution README contains its requirements, architecture, workflows, class
