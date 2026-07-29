@@ -16,6 +16,7 @@ explanations and tests inside each solution.
 | Hotel Management | Date-range availability, room holds, concurrent reservation protection, Strategy, Decorator, folios, check-in/out, refunds | [Open solution](./Hotel%20Management/) / [Read guide](./Hotel%20Management/README.md) |
 | Airline Reservation | Per-flight seat inventory, concurrent booking protection, state machines, cabin pricing, check-in, boarding passes, flight operations | [Open solution](./Airline%20Reservation/) / [Read guide](./Airline%20Reservation/README.md) |
 | Cab Booking | Geospatial distance, pluggable driver matching, atomic dispatch, trip state machine, fare/surge strategies, payments, ratings | [Open solution](./Cab%20Booking/) / [Read guide](./Cab%20Booking/README.md) |
+| Food Delivery | Cart/order snapshots, itemized pricing, restaurant workflow, geospatial partner matching, atomic dispatch, payments, refunds | [Open solution](./Food%20Delivery/) / [Read guide](./Food%20Delivery/README.md) |
 
 ## Requirements
 
@@ -36,6 +37,7 @@ python "Movie Ticket Booking/main.py"
 python "Hotel Management/main.py"
 python "Airline Reservation/main.py"
 python "Cab Booking/main.py"
+python "Food Delivery/main.py"
 ```
 
 ## Run tests
@@ -50,6 +52,7 @@ python -m unittest discover -s "Movie Ticket Booking/tests" -t "Movie Ticket Boo
 python -m unittest discover -s "Hotel Management/tests" -t "Hotel Management" -v
 python -m unittest discover -s "Airline Reservation/tests" -t "Airline Reservation" -v
 python -m unittest discover -s "Cab Booking/tests" -t "Cab Booking" -v
+python -m unittest discover -s "Food Delivery/tests" -t "Food Delivery" -v
 ```
 
 Each solution README contains its requirements, architecture, workflows, class
