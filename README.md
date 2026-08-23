@@ -1,60 +1,104 @@
-# Low-Level Design Solutions
+# Low-Level Design Preparation
 
-Python implementations of common low-level design problems, with detailed
-explanations and tests inside each solution.
+A structured Python 3.10+ repository for learning low-level design, practising
+interview execution, and reviewing runnable implementations with tests.
 
-## Available solutions
+This repository contains two connected resources:
 
-| Solution | Concepts covered | Links |
-|---|---|---|
-| Parking Lot | Strategy, Decorator, dependency injection, allocation, pricing, payments, state management, thread safety | [Open solution](./Parking%20lot/) / [Read guide](./Parking%20lot/README.md) |
-| Library Management | Strategy, Factory, Observer, inheritance, catalog search, loans, fines, FIFO reservations, state machines | [Open solution](./library%20management/) / [Read guide](./library%20management/README.md) |
-| Splitwise | Strategy, Factory, precise money, equal/exact/percentage splits, debt netting, settlements, simplification | [Open solution](./Splitwise/) / [Read guide](./Splitwise/README.md) |
-| Elevator | Strategy, controller orchestration, scheduling, LOOK routing, request/state machines, discrete simulation, safety rules | [Open solution](./Elevator/) / [Read guide](./Elevator/README.md) |
-| ATM | State machines, secure PIN concepts, Gateway, Strategy, precise money, exact cash dispensing, transactions, compensation | [Open solution](./ATM/) / [Read guide](./ATM/README.md) |
-| Movie Ticket Booking | Seat holds, concurrent double-booking protection, state machines, Strategy, Decorator, Gateway, exact money, refunds | [Open solution](./Movie%20Ticket%20Booking/) / [Read guide](./Movie%20Ticket%20Booking/README.md) |
-| Hotel Management | Date-range availability, room holds, concurrent reservation protection, Strategy, Decorator, folios, check-in/out, refunds | [Open solution](./Hotel%20Management/) / [Read guide](./Hotel%20Management/README.md) |
-| Airline Reservation | Per-flight seat inventory, concurrent booking protection, state machines, cabin pricing, check-in, boarding passes, flight operations | [Open solution](./Airline%20Reservation/) / [Read guide](./Airline%20Reservation/README.md) |
-| Cab Booking | Geospatial distance, pluggable driver matching, atomic dispatch, trip state machine, fare/surge strategies, payments, ratings | [Open solution](./Cab%20Booking/) / [Read guide](./Cab%20Booking/README.md) |
-| Food Delivery | Cart/order snapshots, itemized pricing, restaurant workflow, geospatial partner matching, atomic dispatch, payments, refunds | [Open solution](./Food%20Delivery/) / [Read guide](./Food%20Delivery/README.md) |
+- A topic-by-topic [LLD Preparation Bible](./docs/README.md).
+- A catalogue of [working LLD solutions](./solutions/README.md).
+
+## Choose your path
+
+### Learn LLD systematically
+
+1. Open the [curriculum index](./docs/README.md).
+2. Follow the [preparation roadmap](./docs/roadmap.md).
+3. Complete each topic's exercises and mastery gate.
+4. Apply the topic to implementations under `solutions/`.
+
+### Review or practise a design problem
+
+1. Choose a problem from the [solution catalogue](./solutions/README.md).
+2. Read its requirements and invariants before inspecting code.
+3. Predict the object model and critical workflow.
+4. Run the demonstration and tests.
+5. Compare the implementation with your design.
+6. Attempt the advancement exercises in the solution guide.
+
+## Repository structure
+
+```text
+lld-solutions/
+|-- README.md
+|-- docs/
+|   |-- README.md                       # Curriculum index
+|   |-- roadmap.md                      # Topic order and completion criteria
+|   |-- topics/                         # One file per major LLD topic
+|   |-- practice/                       # Problems, mocks, rubric, readiness
+|   `-- templates/                      # Reusable design and README templates
+|-- solutions/
+|   |-- README.md                       # Implemented-solution catalogue
+|   |-- parking-lot/
+|   |-- library-management/
+|   `-- ...
+`-- scripts/
+    `-- run-all-tests.ps1               # Full repository verification
+```
 
 ## Requirements
 
-- Python 3.10 or newer
-- No third-party packages
+- Python 3.10 or newer.
+- PowerShell for the repository-wide test script.
+- No third-party Python packages.
 
-## Run demonstrations
+## Quick start
 
-From the repository root:
-
-```powershell
-python "Parking lot/main.py"
-python "library management/main.py"
-python "Splitwise/main.py"
-python "Elevator/main.py"
-python "ATM/main.py"
-python "Movie Ticket Booking/main.py"
-python "Hotel Management/main.py"
-python "Airline Reservation/main.py"
-python "Cab Booking/main.py"
-python "Food Delivery/main.py"
-```
-
-## Run tests
+Run one demonstration from the repository root:
 
 ```powershell
-python -m unittest discover -s "Parking lot/tests" -t "Parking lot" -v
-python -m unittest discover -s "library management/tests" -t "library management" -v
-python -m unittest discover -s "Splitwise/tests" -t "Splitwise" -v
-python -m unittest discover -s "Elevator/tests" -t "Elevator" -v
-python -m unittest discover -s "ATM/tests" -t "ATM" -v
-python -m unittest discover -s "Movie Ticket Booking/tests" -t "Movie Ticket Booking" -v
-python -m unittest discover -s "Hotel Management/tests" -t "Hotel Management" -v
-python -m unittest discover -s "Airline Reservation/tests" -t "Airline Reservation" -v
-python -m unittest discover -s "Cab Booking/tests" -t "Cab Booking" -v
-python -m unittest discover -s "Food Delivery/tests" -t "Food Delivery" -v
+python "solutions/parking-lot/main.py"
 ```
 
-Each solution README contains its requirements, architecture, workflows, class
-relationships, OOP and SOLID explanations, design-pattern walkthroughs,
-complexity analysis, limitations, and advancement exercises.
+Run its tests:
+
+```powershell
+python -m unittest discover -s "solutions/parking-lot/tests" -t "solutions/parking-lot" -v
+```
+
+Run every solution test suite:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "scripts/run-all-tests.ps1"
+```
+
+## Curriculum progress
+
+| Topic | Status |
+|---|---|
+| [Requirements Analysis and Scope Definition](./docs/topics/01-requirements-analysis.md) | Complete |
+| [Python and Object-Oriented Foundations](./docs/topics/02-python-oop-foundations.md) | Complete |
+| [Domain Modeling and Responsibility Assignment](./docs/topics/03-domain-modeling-and-responsibility-assignment.md) | Complete |
+| [UML and Interaction Modeling](./docs/topics/04-uml-and-interaction-modeling.md) | Complete |
+| [Design Principles and Heuristics](./docs/topics/05-design-principles-and-heuristics.md) | Complete |
+| [Creational Design Patterns](./docs/topics/06-creational-design-patterns.md) | Complete |
+| [Structural Design Patterns](./docs/topics/07-structural-design-patterns.md) | Complete |
+| Behavioral Design Patterns | Next |
+
+See the [roadmap](./docs/roadmap.md) for all fifteen topics.
+
+## Practice and assessment
+
+- [Problem catalogue](./docs/practice/problem-catalog.md)
+- [Interview workflow](./docs/practice/interview-workflow.md)
+- [Mock-interview rubric](./docs/practice/mock-interview-rubric.md)
+- [Final readiness checklist](./docs/practice/readiness-checklist.md)
+- [Design-brief template](./docs/templates/design-brief-template.md)
+
+## Adding a solution
+
+1. Use a lowercase kebab-case directory under `solutions/`.
+2. Keep the implementation self-contained with its own `main.py` and `tests/`.
+3. Follow the [solution README template](./docs/templates/solution-readme-template.md).
+4. Add the solution to `solutions/README.md` and `scripts/run-all-tests.ps1`.
+5. Run the entire test suite before considering the solution complete.
