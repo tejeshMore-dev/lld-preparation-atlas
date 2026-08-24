@@ -7,7 +7,7 @@ The material is split by major topic so each chapter can be learned, practised,
 reviewed, and updated independently. The solution implementations live under
 [`solutions/`](../solutions/).
 
-Use the live [LLD Preparation Lab](https://tejeshmore-dev.github.io/lld-solutions/)
+Use the live [LLD Preparation Lab](https://tejeshmore-dev.github.io/lld-preparation-atlas/)
 to mark personal topic progress. Checkbox state is stored privately in the
 browser and can be exported as a JSON backup.
 

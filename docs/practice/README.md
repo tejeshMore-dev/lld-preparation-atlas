@@ -6,7 +6,7 @@ Start with
 [Topic 15 - Interview Execution, Problem Practice, and Readiness](../topics/15-interview-execution-problem-practice-and-readiness.md)
 for the complete practice and assessment method.
 
-The live [LLD Preparation Lab](https://tejeshmore-dev.github.io/lld-solutions/)
+The live [LLD Preparation Lab](https://tejeshmore-dev.github.io/lld-preparation-atlas/)
 tracks chapter completion in browser local storage. Use the attempt log below
 for evidence that is richer than a topic checkbox.
 

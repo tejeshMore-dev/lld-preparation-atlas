@@ -10,7 +10,7 @@ import {
 } from "./progress.js";
 
 const REPOSITORY_BLOB_URL =
-  "https://github.com/tejeshMore-dev/lld-solutions/blob/main";
+  "https://github.com/tejeshMore-dev/lld-preparation-atlas/blob/main";
 const topicIds = TOPICS.map((topic) => topic.id);
 
 const elements = {

@@ -7,12 +7,12 @@ This repository contains two connected resources:
 
 - A topic-by-topic [LLD Preparation Bible](./docs/README.md).
 - A catalogue of [working LLD solutions](./solutions/README.md).
-- A browser-based [LLD progress tracker](https://tejeshmore-dev.github.io/lld-solutions/)
+- A browser-based [LLD progress tracker](https://tejeshmore-dev.github.io/lld-preparation-atlas/)
   with private `localStorage` persistence.
 
 ## Live progress tracker
 
-Open **[LLD Preparation Lab](https://tejeshmore-dev.github.io/lld-solutions/)**
+Open **[LLD Preparation Lab](https://tejeshmore-dev.github.io/lld-preparation-atlas/)**
 to tick topics off one by one, see phase and overall progress, search/filter the
 curriculum, continue from the first unfinished chapter, and export/import a JSON
 backup. Progress stays in the current browser unless you export it.
@@ -38,7 +38,7 @@ backup. Progress stays in the current browser unless you export it.
 ## Repository structure
 
 ```text
-lld-solutions/
+lld-preparation-atlas/
 |-- README.md
 |-- docs/
 |   |-- README.md                       # Curriculum index
