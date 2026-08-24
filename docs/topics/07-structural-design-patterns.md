@@ -1,7 +1,8 @@
 # Topic 7 - Structural Design Patterns
 
 [Curriculum index](../README.md) | [Preparation roadmap](../roadmap.md) |
-[Previous topic](./06-creational-design-patterns.md)
+[Previous topic](./06-creational-design-patterns.md) |
+[Next topic](./08-behavioral-design-patterns.md)
 
 - **Category:** Design patterns and object composition
 - **Difficulty:** Intermediate to advanced

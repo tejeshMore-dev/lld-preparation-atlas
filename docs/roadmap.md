@@ -28,14 +28,17 @@ Use the same progression for every topic:
 | 5 | [Design Principles and Heuristics](./topics/05-design-principles-and-heuristics.md) | Topics 2-3 | Complete |
 | 6 | [Creational Design Patterns](./topics/06-creational-design-patterns.md) | Topics 2, 5 | Complete |
 | 7 | [Structural Design Patterns](./topics/07-structural-design-patterns.md) | Topics 2, 5 | Complete |
-| 8 | Behavioral Design Patterns | Topics 2, 5 | Planned |
-| 9 | Application Patterns and Reusable Building Blocks | Topics 3, 5-8 | Planned |
-| 10 | API Contracts and Error Modeling | Topics 3, 5 | Planned |
-| 11 | Concurrency and Thread Safety | Topics 2-3, 10 | Planned |
-| 12 | Persistence and Transaction Boundaries | Topics 3, 9-11 | Planned |
-| 13 | Clean Code and Refactoring | Topics 2-12 | Planned |
-| 14 | Testing Low-Level Designs | Topics 2-13 | Planned |
-| 15 | Interview Execution, Problem Practice, and Readiness | All previous topics | Planned |
+| 8 | [Behavioral Design Patterns](./topics/08-behavioral-design-patterns.md) | Topics 2, 5 | Complete |
+| 9 | [Application Patterns and Reusable Building Blocks](./topics/09-application-patterns-and-reusable-building-blocks.md) | Topics 3, 5-8 | Complete |
+| 10 | [API Contracts and Error Modeling](./topics/10-api-contracts-and-error-modeling.md) | Topics 3, 5, 9 | Complete |
+| 11 | [Concurrency and Thread Safety](./topics/11-concurrency-and-thread-safety.md) | Topics 2-3, 10 | Complete |
+| 12 | [Persistence and Transaction Boundaries](./topics/12-persistence-and-transaction-boundaries.md) | Topics 3, 9-11 | Complete |
+| 13 | [Clean Code and Refactoring](./topics/13-clean-code-and-refactoring.md) | Topics 2-12 | Complete |
+| 14 | [Testing Low-Level Designs](./topics/14-testing-low-level-designs.md) | Topics 2-13 | Complete |
+| 15 | [Interview Execution, Problem Practice, and Readiness](./topics/15-interview-execution-problem-practice-and-readiness.md) | All previous topics | Complete |
+
+**Bible content progress:** 15 of 15 topics complete (100%). This tracks authored
+curriculum content, not an individual's mastery evidence.
 
 ## Recommended preparation phases
 
@@ -70,7 +73,8 @@ Preparation is complete when all of these are true:
 - [ ] At least 12 varied LLD problems have been designed independently.
 - [ ] At least 8 problems have been implemented end to end with tests.
 - [ ] At least 5 timed mock interviews have been completed.
-- [ ] Three consecutive unseen mocks were completed without major hints.
+- [ ] Three consecutive unseen mocks scored at least 80/100, with no critical
+  failure and no major hints.
 - [ ] At least 3 mocks included a follow-up requirement change.
 - [ ] Core code was compiling or logically complete within 45-60 minutes.
 - [ ] Designs consistently covered requirements, invariants, failures, tests,
@@ -78,5 +82,6 @@ Preparation is complete when all of these are true:
 - [ ] No design depends on memorizing one solution or forcing patterns.
 
 Use the [readiness checklist](./practice/readiness-checklist.md) and
-[mock-interview rubric](./practice/mock-interview-rubric.md) for the final
-assessment.
+[mock-interview rubric](./practice/mock-interview-rubric.md), preserving each
+attempt with the [attempt-log template](./practice/attempt-log-template.md), for
+the final assessment.

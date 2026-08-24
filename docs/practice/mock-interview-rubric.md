@@ -1,7 +1,8 @@
 # LLD Mock-Interview Rubric
 
-Score each category from `0` to its maximum. A consistent pass is at least
-`80/100` with no critical failure.
+Score each category from `0` to its maximum and cite observable evidence. A pass
+is at least `80/100` with no critical failure. A readiness-streak pass must also
+be unseen and completed without a major hint.
 
 | Category | Points |
 |---|---:|
@@ -27,6 +28,10 @@ An interview does not pass if the design:
 - Contains an unresolved data-loss, double-booking, or double-payment path.
 - Depends on memorized classes but cannot handle a small requirement change.
 - Receives so much guidance that the solution is no longer independent.
+
+Classify guidance as clarification, minor nudge, major hint, or
+solution-providing intervention. Preserve the decision in the
+[attempt log](./attempt-log-template.md).
 
 ## Score interpretation
 

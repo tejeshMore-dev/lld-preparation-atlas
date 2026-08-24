@@ -25,10 +25,13 @@ Preparation is complete only when the evidence is repeatable.
 ## Interview performance
 
 - [ ] At least 5 timed mocks were completed.
-- [ ] Three consecutive unseen mocks scored at least 80/100.
+- [ ] Three consecutive unseen mocks scored at least 80/100 with no critical
+  failure and no major hint.
 - [ ] At least 3 mocks included follow-up requirement changes.
 - [ ] A normal problem can be completed in 45-60 minutes.
 - [ ] Assumptions and trade-offs are communicated clearly.
+- [ ] Every readiness mock has a preserved [attempt log](./attempt-log-template.md)
+  with evidence, hints, follow-up, score, and repair history.
 
 ## Final readiness statement
 

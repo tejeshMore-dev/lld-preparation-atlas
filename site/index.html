@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f3eee3">
+    <meta
+      name="description"
+      content="Track progress through the 15-topic Low-Level Design Preparation Bible."
+    >
+    <meta property="og:title" content="LLD Preparation Lab">
+    <meta
+      property="og:description"
+      content="A dependency-ordered LLD curriculum with private browser progress tracking."
+    >
+    <meta property="og:type" content="website">
+    <title>LLD Preparation Lab</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#curriculum">Skip to curriculum</a>
+
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="LLD Preparation Lab home">
+        <span class="brand-mark" aria-hidden="true">LLD</span>
+        <span>
+          <strong>Preparation Lab</strong>
+          <small>Design with evidence</small>
+        </span>
+      </a>
+      <nav class="header-actions" aria-label="Utility navigation">
+        <span class="storage-pill" title="Progress stays in this browser">
+          <span class="storage-dot" aria-hidden="true"></span>
+          Local progress
+        </span>
+        <a
+          class="button button-quiet header-github"
+          href="https://github.com/tejeshMore-dev/lld-solutions"
+        >
+          View repository
+        </a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">Low-level design · 15-topic curriculum</p>
+          <h1 id="hero-title">Design clearly.<br><em>Build confidently.</em></h1>
+          <p class="hero-intro">
+            Work through the LLD Preparation Bible in dependency order. Mark a
+            topic complete only after its mastery gate—your progress is saved
+            privately in this browser.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#curriculum">Start learning</a>
+            <a
+              class="button button-quiet"
+              href="https://github.com/tejeshMore-dev/lld-solutions/blob/main/docs/roadmap.md"
+            >
+              Read the roadmap
+            </a>
+          </div>
+        </div>
+
+        <aside class="progress-card" aria-label="Overall curriculum progress">
+          <div class="progress-card-top">
+            <div>
+              <p class="eyebrow">Your progress</p>
+              <p class="progress-fraction">
+                <strong id="completed-count">0</strong>
+                <span>/ 15 topics</span>
+              </p>
+            </div>
+            <div
+              class="progress-ring"
+              id="progress-ring"
+              role="img"
+              aria-label="0 percent complete"
+            >
+              <span id="progress-percent">0%</span>
+            </div>
+          </div>
+          <progress
+            class="progress-track"
+            aria-label="Topic completion"
+            max="15"
+            value="0"
+          >
+            0 of 15 topics complete
+          </progress>
+          <div class="progress-meta">
+            <span><strong id="remaining-count">15</strong> remaining</span>
+            <span id="progress-message">Your first chapter is ready.</span>
+          </div>
+          <a class="continue-card" id="continue-link" href="#topic-1">
+            <span>
+              <small>Continue with</small>
+              <strong id="continue-title">Topic 1 · Requirements Analysis</strong>
+            </span>
+            <span class="continue-arrow" aria-hidden="true">→</span>
+          </a>
+        </aside>
+      </section>
+
+      <section class="metrics" aria-label="Curriculum facts">
+        <article>
+          <span class="metric-number">15</span>
+          <span class="metric-label">Complete chapters</span>
+        </article>
+        <article>
+          <span class="metric-number">11</span>
+          <span class="metric-label">Runnable solutions</span>
+        </article>
+        <article>
+          <span class="metric-number">154</span>
+          <span class="metric-label">Behavior tests</span>
+        </article>
+        <article>
+          <span class="metric-number">1</span>
+          <span class="metric-label">Evidence-based readiness gate</span>
+        </article>
+      </section>
+
+      <section class="principle-banner">
+        <p class="eyebrow">The working loop</p>
+        <p>
+          <span>Understand</span><b>→</b><span>Explain</span><b>→</b><span>Model</span>
+          <b>→</b><span>Implement</span><b>→</b><span>Test</span><b>→</b>
+          <span>Solve timed</span><b>→</b><span>Adapt</span>
+        </p>
+      </section>
+
+      <section class="curriculum-section" id="curriculum" aria-labelledby="curriculum-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">The curriculum</p>
+            <h2 id="curriculum-title">Fifteen chapters. One clear sequence.</h2>
+            <p>
+              Repository content is complete. These checkboxes represent your
+              personal mastery and start empty on each browser.
+            </p>
+          </div>
+          <div class="toolbar">
+            <label class="search-field">
+              <span class="sr-only">Search topics</span>
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="m21 21-4.4-4.4m2.4-5.1a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z" />
+              </svg>
+              <input id="topic-search" type="search" placeholder="Search topics">
+            </label>
+            <div class="filter-group" role="group" aria-label="Filter topics">
+              <button class="filter-button active" type="button" data-filter="all">All</button>
+              <button class="filter-button" type="button" data-filter="remaining">To study</button>
+              <button class="filter-button" type="button" data-filter="complete">Complete</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="topic-list" class="topic-list"></div>
+        <p id="empty-state" class="empty-state" hidden>
+          No topics match this view. Try another search or filter.
+        </p>
+      </section>
+
+      <section class="evidence-section" aria-labelledby="evidence-title">
+        <div>
+          <p class="eyebrow">Readiness is earned</p>
+          <h2 id="evidence-title">Reading is the start. Repeatable evidence is the finish.</h2>
+          <p>
+            The Bible is structurally complete, but personal preparation requires
+            independent designs, tested implementations, timed mocks, and three
+            consecutive unseen passes.
+          </p>
+          <a
+            class="text-link"
+            href="https://github.com/tejeshMore-dev/lld-solutions/blob/main/docs/topics/15-interview-execution-problem-practice-and-readiness.md"
+          >
+            Open the final readiness gate →
+          </a>
+        </div>
+        <ol class="evidence-list">
+          <li><strong>12</strong><span>varied independent designs</span></li>
+          <li><strong>8</strong><span>end-to-end tested implementations</span></li>
+          <li><strong>5</strong><span>realistic timed mocks</span></li>
+          <li><strong>3×</strong><span>consecutive unseen 80+ passes</span></li>
+        </ol>
+      </section>
+
+      <section class="data-section" aria-labelledby="data-title">
+        <div>
+          <p class="eyebrow">Your data, your browser</p>
+          <h2 id="data-title">Portable when you need it. Private by default.</h2>
+          <p>
+            Topic completion is stored in <code>localStorage</code>. Export a JSON
+            backup before clearing browser data or moving to another device.
+          </p>
+        </div>
+        <div class="data-actions">
+          <button class="button button-ink" id="export-progress" type="button">
+            Export progress
+          </button>
+          <button class="button button-paper" id="import-progress" type="button">
+            Import backup
+          </button>
+          <button class="text-button danger-button" id="reset-progress" type="button">
+            Reset all progress
+          </button>
+          <input id="import-file" type="file" accept="application/json,.json" hidden>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div>
+        <span class="brand-mark footer-mark" aria-hidden="true">LLD</span>
+        <p>
+          A practical, dependency-ordered preparation system for low-level design
+          and machine-coding interviews.
+        </p>
+      </div>
+      <nav aria-label="Footer navigation">
+        <a href="https://github.com/tejeshMore-dev/lld-solutions/blob/main/docs/README.md">Bible index</a>
+        <a href="https://github.com/tejeshMore-dev/lld-solutions/tree/main/solutions">Solutions</a>
+        <a href="https://github.com/tejeshMore-dev/lld-solutions/blob/main/docs/practice/README.md">Practice hub</a>
+        <a href="https://github.com/tejeshMore-dev/lld-solutions">GitHub</a>
+      </nav>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
