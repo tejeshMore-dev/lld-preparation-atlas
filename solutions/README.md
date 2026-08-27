@@ -1,6 +1,8 @@
 # LLD Problem Breakdowns
 
-Each guide follows the same interview-first shape: scope, model, critical flow, decisions, correctness, and follow-ups.
+Each guide is a complete, original interview walkthrough covering scope,
+requirements, invariants, model, class responsibilities, critical workflows,
+correctness, tests, trade-offs, extensions, and interview expectations.
 
 ## Runnable Python solutions
 
@@ -29,7 +31,9 @@ Run all runnable suites:
 
 ## Design walkthroughs
 
-These are concise Markdown designs intended for a blank-file interview exercise.
+These are comprehensive Markdown designs intended for a blank-file interview
+exercise. They include implementation contracts and verification plans but do
+not yet have runnable Python projects.
 
 | Problem | Main design pressure |
 |---|---|

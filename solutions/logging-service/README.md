@@ -1,58 +1,386 @@
-# Logging Service
+# Logging Service Low-Level Design
 
-Design an in-process logger with levels, structured events, formatting, and multiple outputs.
+Design an in-process logging framework with levels, structured events, formatting, filtering, multiple destinations, and safe asynchronous delivery.
 
-## Scope
+## 1. Understanding the problem
 
-Support level filtering, contextual fields, configurable formatters, and several appenders. Distributed log collection, indexing, and alerting are external systems.
+A logger is a reusable component, not a centralized log-storage platform.
 
-## Model
+Its core job is:
 
-| Type | Responsibility |
+    call -> event -> filter -> format -> append
+
+The design should allow console, file, memory, or remote outputs without coupling caller code to destination details.
+
+The hard parts are configuration, fan-out, thread safety, queue overflow, failure isolation, and preventing the logger from recursively logging its own failures.
+
+## 2. Clarifying questions
+
+- Is this an in-process library or a distributed ingestion service?
+- Which levels exist?
+- Are log events structured?
+- Can each destination use a different threshold and format?
+- Do named loggers inherit parent configuration?
+- Is delivery synchronous or asynchronous?
+- What happens when a destination fails?
+- What happens when an async queue is full?
+- Must flush guarantee durability?
+- Is file rotation required?
+- How is request context attached?
+- Must secrets be redacted?
+
+## 3. Final requirements
+
+Version one supports:
+
+1. TRACE, DEBUG, INFO, WARN, ERROR, and FATAL levels.
+2. Named loggers.
+3. Immutable LogEvent values.
+4. Message plus structured context.
+5. Logger and handler thresholds.
+6. Several handlers per logger.
+7. Replaceable formatters.
+8. Console and in-memory appenders.
+9. Thread-safe writes.
+10. Optional bounded asynchronous appender.
+11. Flush and close lifecycle.
+12. Explicit appender-failure policy.
+
+Distributed collection, indexing, search, and alerting remain external.
+
+## 4. Invariants
+
+1. One logging call creates at most one LogEvent timestamp and identity.
+2. Every handler receives the same immutable event.
+3. A rejected level performs no formatting or I/O.
+4. Appender writes are serialized when the destination requires it.
+5. An accepted async event is either delivered or accounted for by the overflow/failure policy.
+6. close() rejects new events and handles queued events according to its contract.
+7. Logging an internal failure cannot recurse indefinitely.
+8. Context supplied by one request does not leak into another.
+9. Secret fields are redacted before they reach an unsafe destination.
+
+## 5. Pipeline model
+
+| Type | Important state | Responsibility |
+|---|---|---|
+| LogLevel | severity ordering | threshold comparison |
+| LogEvent | time, level, message, logger, context, error | immutable logging fact |
+| Logger | name, threshold, handlers | creates and dispatches events |
+| Handler | threshold, filters, formatter, appender | per-destination pipeline |
+| LogFilter | configuration | accepts/rejects an event |
+| Formatter | configuration | converts event to text/bytes |
+| Appender | destination resources | writes formatted output |
+| LogManager | logger/configuration registry | creates and updates named loggers |
+| ContextProvider | request-local data | correlation and structured fields |
+
+Relationships:
+
+    LogManager o-- Logger
+    Logger o-- Handler
+    Handler --> LogFilter
+    Handler --> Formatter
+    Handler --> Appender
+    Logger --> ContextProvider
+
+## 6. LogEvent design
+
+LogEvent should be immutable and contain:
+
+- timestamp;
+- monotonic/sequence data if ordering matters;
+- level;
+- logger name;
+- message template or rendered message;
+- structured context map;
+- exception metadata;
+- thread/process identity when useful.
+
+Copy or freeze context at event creation. A caller mutating a dictionary after log() must not change queued events.
+
+Avoid storing raw exception objects in long-lived queues if they retain large object graphs; capture stable exception details.
+
+## 7. Level filtering
+
+Levels have a total order.
+
+    event.level >= configured_threshold
+
+Filter early at Logger to avoid event construction when possible. Handler thresholds still matter because console may accept INFO while a file accepts DEBUG.
+
+If message construction is expensive, accept a lazy message supplier or parameterized template rather than requiring callers to precompute the string.
+
+## 8. Logger design
+
+Useful public API:
+
+    trace(message, **context)
+    debug(message, **context)
+    info(message, **context)
+    warn(message, **context)
+    error(message, error=None, **context)
+    log(level, message, **context)
+    is_enabled(level) -> bool
+
+Logger:
+
+1. checks its effective threshold;
+2. merges explicit and request context;
+3. creates one immutable event using Clock;
+4. offers the event to every handler;
+5. applies the configured failure policy.
+
+It does not format or write destinations itself.
+
+## 9. Handler design
+
+Handler combines per-destination behavior:
+
+    if level accepted
+       and all filters accept:
+        output = formatter.format(event)
+        appender.append(output)
+
+Different handlers can use:
+
+- human-readable console text;
+- JSON file output;
+- ERROR-only remote delivery;
+- a filter that samples noisy events.
+
+Handler composition avoids a subclass for every level/format/destination combination.
+
+## 10. Formatter design
+
+Formatter is a strategy:
+
+    format(event) -> str | bytes
+
+Examples:
+
+- TextFormatter with timestamp, level, logger, message, context;
+- JsonFormatter with stable keys;
+- PatternFormatter with validated tokens.
+
+Formatting failures should not break domain workflows silently. Route them to a fallback error sink and follow the configured logger failure policy.
+
+Structured logs should preserve context fields rather than embedding everything into one message.
+
+## 11. Appender design
+
+Appender contract:
+
+    append(formatted_event)
+    flush()
+    close()
+
+Implementations:
+
+- ConsoleAppender: serialized stream writes;
+- MemoryAppender: deterministic tests;
+- FileAppender: file lifecycle and optional rotation;
+- RemoteAppender: batching, retry, and timeout;
+- AsyncAppender: decorates another appender with a queue and worker.
+
+Appender owns destination resources; Formatter owns representation.
+
+## 12. Logging workflow
+
+    Caller -> Logger: info(message, context)
+    Logger -> Logger: level check and event creation
+    Logger -> Handler*: handle(event)
+    Handler -> Filter*: accept(event)
+    Handler -> Formatter: format(event)
+    Handler -> Appender: append(output)
+
+A failure in one handler should not necessarily prevent other independent handlers from receiving the event. Define whether the logger swallows, reports, or propagates appender failures.
+
+For typical application logging, protect the application and report through a minimal fallback sink.
+
+## 13. Asynchronous appender
+
+AsyncAppender wraps a real appender.
+
+Components:
+
+- bounded queue;
+- worker thread;
+- lifecycle state;
+- overflow policy;
+- failure counter/fallback;
+- flush barrier.
+
+Overflow choices:
+
+| Policy | Trade-off |
 |---|---|
-| LogEvent | immutable timestamp, level, message, context, and error |
-| Logger | creates events and applies its threshold |
-| Formatter | converts an event to bytes or text |
-| Appender | writes a formatted event to one destination |
-| Handler | combines threshold, formatter, and appender |
-| LogManager | named logger configuration |
+| Block caller | preserves events, increases latency/deadlock risk |
+| Drop newest | protects old queued events |
+| Drop oldest | preserves recent information |
+| Synchronous fallback | latency spike but may preserve event |
+| Sample | bounded loss with metrics |
 
-Flow:
+The policy must be explicit and observable.
 
-    call -> Logger -> LogEvent -> Handler(s) -> Formatter -> Appender
+### Flush
 
-## Critical flow
+flush() should establish a barrier: every event accepted before the call is processed before flush returns, then delegate to the wrapped appender.
 
-1. Return early when the logger threshold rejects the level.
-2. Capture time and context once in an immutable event.
-3. Send the same event to each eligible handler.
-4. Each handler formats and appends it.
-5. Apply the configured failure policy if an appender fails.
+### Close
 
-Logging should not recursively log its own internal failure.
+1. atomically stop accepting new events;
+2. enqueue/signal shutdown;
+3. drain according to contract;
+4. join worker;
+5. flush and close wrapped appender.
 
-## Design decisions
+## 14. Configuration and hierarchy
 
-- Formatter and Appender are strategies with different responsibilities.
-- Handlers allow different levels and formats per destination.
-- Decorators can add sampling, masking, or retry, but composition order must be explicit.
-- Child loggers may inherit configuration; avoid surprising duplicate propagation.
-- Structured context is data, not string concatenation.
+LogManager can return a stable Logger by name.
 
-## Concurrency and performance
+Named hierarchy such as app.payment.checkout may inherit:
 
-Console and file appenders need serialized writes. An asynchronous appender can place immutable events on a bounded queue. Define overflow behavior: block, drop newest, drop oldest, or fall back synchronously.
+- threshold;
+- handlers;
+- propagation flag.
 
-Flush and close must drain accepted events. Never hold the configuration lock while doing destination I/O.
+Be careful not to deliver the same event twice through child and parent handlers unintentionally. Configuration updates should publish an immutable snapshot so logging calls do not hold a global lock during I/O.
 
-## Follow-ups
+## 15. Context propagation
 
-- JSON formatting and secret redaction.
-- File rotation.
-- Correlation context scoped to a request.
-- Dynamic configuration.
-- Batched remote appender with retry.
+Request context can use a context-local mechanism:
 
-## Interview finish
+    with log_context(request_id=..., user_id=...):
+        logger.info("payment started")
 
-Implement LogEvent, Logger, Handler, one formatter, console/memory appenders, and tests for thresholds, context, fan-out, appender failure, and concurrent writes.
+Explicit call fields override or merge with ambient fields according to a documented rule.
+
+Always clear scoped context. Thread-local storage alone is insufficient for some asynchronous runtimes; use the language’s context propagation facility.
+
+## 16. Secret redaction
+
+Redact before unsafe serialization/output.
+
+Options:
+
+- denylist known secret keys;
+- allowlist permitted fields;
+- typed Sensitive values;
+- formatter/filter decorator.
+
+Do not rely only on string replacement after formatting. Record redaction failures and keep the fallback sink safe.
+
+## 17. Error policy
+
+| Failure | Suggested handling |
+|---|---|
+| disabled level | return immediately |
+| filter error | reject event and record internal metric |
+| formatter error | fallback message without unsafe context |
+| one appender fails | continue other handlers |
+| queue full | apply configured overflow policy |
+| worker failure | mark unhealthy; fallback/drop with metric |
+| close called twice | idempotent |
+| log after close | reject or use explicit fallback |
+
+Never report an internal error through the same failing logger pipeline.
+
+## 18. Patterns and principles
+
+| Technique | Purpose |
+|---|---|
+| Strategy | formatter and filter variation |
+| Composite/fan-out | several handlers |
+| Decorator | async, retry, masking, sampling |
+| Factory/manager | named logger configuration |
+| Adapter | external stream/file/remote client |
+| Immutable value | LogEvent |
+| Producer-consumer | bounded asynchronous delivery |
+| Dependency injection | clock, context provider, appenders |
+
+Ordering of decorators matters: mask before remote output; retry around the destination; async placement determines where work occurs.
+
+## 19. Concurrency
+
+- Logger handler configuration is read from an immutable snapshot.
+- LogEvent is immutable.
+- Console/FileAppender serializes destination writes.
+- Async queue provides producer/consumer coordination.
+- close and append share a lifecycle lock/atomic state.
+- Do not hold the manager configuration lock while formatting or doing I/O.
+- Preserve per-appender event order if promised; global order across appenders is generally not guaranteed.
+
+## 20. Complexity
+
+For H handlers:
+
+- disabled log call: O(1);
+- dispatch: O(H) plus formatter and I/O cost;
+- async enqueue: O(1) average;
+- memory: O(queue capacity + retained configuration);
+- flush: proportional to queued events and destination latency.
+
+Filtering before formatting avoids unnecessary work.
+
+## 21. Verification
+
+Test:
+
+- level ordering and thresholds;
+- logger-level early rejection;
+- different thresholds per handler;
+- text and structured formatting;
+- context merge and isolation;
+- fan-out to multiple appenders;
+- one handler failing while another succeeds;
+- concurrent writes are not interleaved incorrectly;
+- bounded queue overflow policies;
+- flush barrier;
+- close idempotency and log-after-close;
+- worker failure fallback;
+- secret redaction;
+- no recursive failure logging;
+- deterministic timestamps through Clock.
+
+## 22. Extensibility
+
+- **File rotation:** RotationPolicy around FileAppender.
+- **Remote batching:** batching decorator with retry and circuit breaker.
+- **Dynamic configuration:** atomic immutable config snapshots.
+- **Metrics:** counters for accepted, dropped, failed, and queue depth.
+- **Sampling:** Filter based on event key/rate.
+- **Correlation:** ContextProvider.
+- **Audit logging:** separate durable contract; do not treat best-effort logs as an audit ledger.
+- **Distributed tracing:** adapter that maps trace/span context into fields.
+
+## 23. Trade-offs
+
+- Synchronous logging is simple and observable but adds request latency.
+- Async logging isolates latency but introduces loss and lifecycle semantics.
+- Hierarchical inheritance is convenient but can surprise users with duplicate output.
+- Structured events improve analysis but require field governance.
+- Swallowing failures protects the app; audit/security use cases may require a fail-closed contract.
+
+## 24. Interview expectations
+
+### Junior
+
+Model Logger, levels, one Formatter, and console/file Appender.
+
+### Mid-level
+
+Add handlers, thresholds, multiple outputs, dependency separation, errors, and tests.
+
+### Senior
+
+Discuss immutable configuration, bounded async delivery, overflow, flush/close guarantees, failure isolation, context propagation, secret handling, and audit-log differences.
+
+## 25. Interview walkthrough
+
+1. Establish that this is an in-process library.
+2. Draw Logger -> Handler -> Formatter -> Appender.
+3. State early-filtering, immutable-event, and failure-isolation invariants.
+4. Implement synchronous fan-out first.
+5. Test threshold and one failing destination.
+6. Add AsyncAppender as a decorator with explicit overflow and close contracts.
+7. Discuss remote ingestion separately.

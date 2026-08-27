@@ -1,60 +1,317 @@
-# Amazon Locker
+# Amazon Locker Low-Level Design
 
-Design a last-mile locker system that assigns a fitting compartment and secures pickup with an expiring code.
+Design a last-mile locker system that assigns a fitting compartment, supports secure deposit and pickup, and releases expired allocations.
 
-## Scope
+## 1. Understanding the problem
 
-Support package deposit, customer pickup, return initiation, and expired allocation release. Assume one process and an in-memory repository. Routing trucks, notifications, and physical hardware protocols are outside the core design.
+A locker system connects three parties:
 
-## Model
+- a delivery agent deposits a package;
+- a customer collects it using a pickup code;
+- an operator manages locations and unavailable lockers.
 
-| Type | Responsibility |
+The central resource is a locker compartment. The design must prevent two packages from owning the same locker and must release capacity after pickup or expiry.
+
+## 2. Clarifying questions
+
+### Network and capacity
+
+- Are there several locker locations?
+- Which locker sizes exist?
+- Can a smaller package use a larger locker?
+- Should allocation minimize wasted capacity or customer distance?
+
+### Delivery and pickup
+
+- Is a package assigned before the driver arrives or at deposit time?
+- Who receives the pickup code?
+- Does a code expire?
+- How many failed attempts are allowed?
+- Can staff override a blocked allocation?
+
+### Returns
+
+- Can a customer deposit a return?
+- Does a return use a new code and lifecycle?
+- When is the carrier expected to collect it?
+
+### Correctness
+
+- Can several drivers deposit concurrently?
+- Is hardware controlled synchronously?
+- What happens if the door opens but the database update fails?
+
+## 3. Final requirements
+
+Version one supports:
+
+1. Several locations, each with many lockers.
+2. Small, medium, and large packages and lockers.
+3. Smallest-fitting-locker allocation.
+4. Delivery deposit with an expiring pickup code.
+5. Customer pickup with code validation.
+6. Return initiation using an available locker.
+7. Expired allocation release.
+8. Locker maintenance state.
+9. Deterministic time through an injected Clock.
+
+Routing, notifications, and hardware protocols remain external boundaries.
+
+## 4. Invariants
+
+1. A locker has at most one active allocation.
+2. A package has at most one active allocation.
+3. The chosen locker is large enough for the package.
+4. Only a valid, unexpired code opens the allocation.
+5. A completed or expired allocation cannot be completed again.
+6. Releasing an allocation releases its locker exactly once.
+7. A locker under maintenance cannot be allocated.
+8. Package and allocation lifecycles move only through legal transitions.
+
+## 5. Core model
+
+| Type | Important state | Responsibility |
+|---|---|---|
+| Package | ID, owner, size, state | shipment being deposited or returned |
+| Locker | ID, size, state, active allocation | protects compartment availability |
+| LockerLocation | ID, address, lockers | location capacity and search boundary |
+| Allocation | package, locker, code hash, expiry, state | secures one temporary assignment |
+| AllocationPolicy | none/configuration | selects the best fitting locker |
+| LockerService | repositories and collaborators | coordinates deposit, pickup, return, expiry |
+| AccessController | hardware port | opens a physical locker |
+| Clock | current time | deterministic expiry decisions |
+
+Relationships:
+
+    LockerLocation *-- Locker
+    Allocation --> Package
+    Allocation --> Locker
+    LockerService --> AllocationPolicy
+    LockerService --> AccessController
+    LockerService --> Clock
+
+## 6. State models
+
+Package:
+
+    EXPECTED -> DEPOSITED -> COLLECTED
+                         \-> EXPIRED
+    EXPECTED -> RETURN_DEPOSITED -> RETURN_COLLECTED
+
+Locker:
+
+    AVAILABLE -> OCCUPIED -> AVAILABLE
+    AVAILABLE -> OUT_OF_SERVICE -> AVAILABLE
+
+Allocation:
+
+    CREATED -> ACTIVE -> COMPLETED
+                     \-> EXPIRED
+                     \-> CANCELLED
+
+Keep package, locker, and allocation state separate. They describe different facts even though their transitions are coordinated.
+
+## 7. Class design
+
+### Package
+
+Package is an entity identified by package_id. PackageSize is an ordered value so fit is a comparison rather than subtype logic.
+
+Package should expose deposit(), collect(), expire(), and return transitions rather than unrestricted status assignment.
+
+### Locker
+
+Locker owns availability because it owns compartment state.
+
+Useful behavior:
+
+    can_fit(package_size) -> bool
+    allocate(allocation_id)
+    release(allocation_id)
+    mark_out_of_service()
+    restore()
+
+allocate() rejects an occupied, too-small, or unavailable locker. release() verifies allocation ownership so an old command cannot release a newer package.
+
+### Allocation
+
+Allocation owns:
+
+- pickup credential hash;
+- expiry timestamp;
+- failed-attempt count;
+- active/completed state;
+- validation and completion behavior.
+
+The plaintext code should be returned once for notification and never stored in production.
+
+### LockerLocation
+
+The location groups lockers and is the natural lock or transaction scope for simple allocation. It may maintain availability indexes by size when scanning becomes expensive.
+
+### AllocationPolicy
+
+The default SmallestFitPolicy:
+
+1. filters available lockers that fit;
+2. sorts by size and optional distance;
+3. returns the smallest candidate.
+
+A policy selects; Locker performs the state change.
+
+### LockerService
+
+LockerService coordinates repository access, policy selection, hardware, and entity transitions. It should read like deposit_package(), pickup_package(), initiate_return(), and expire_allocations().
+
+## 8. Deposit workflow
+
+    DeliveryAgent -> LockerService: deposit(package, location)
+    LockerService -> AllocationPolicy: choose(lockers, package.size)
+    AllocationPolicy -> LockerService: locker
+    LockerService -> Locker: allocate(allocationId)
+    LockerService -> Allocation: activate(codeHash, expiry)
+    LockerService -> AccessController: open(lockerId)
+    LockerService -> DeliveryAgent: deposit result
+
+Recommended ordering depends on hardware guarantees. A safe conceptual workflow is:
+
+1. Validate package eligibility.
+2. Atomically claim a fitting locker and create an allocation.
+3. Ask hardware to open the door.
+4. Confirm deposit using a sensor or driver action.
+5. Mark package deposited and allocation active.
+6. Publish a notification event after commit.
+
+If hardware fails before deposit confirmation, cancel the allocation and release the locker.
+
+## 9. Pickup workflow
+
+1. Load the active allocation by package or pickup reference.
+2. Reject expired or blocked allocation.
+3. Compare the submitted code with the stored hash.
+4. Increment failed attempts atomically on mismatch.
+5. Open the locker through AccessController.
+6. Confirm the door/package event.
+7. Mark allocation complete and package collected.
+8. Release the locker.
+9. Publish PackageCollected.
+
+Repeated pickup should return a stable completed result or a clear conflict; it must not open a locker now assigned to someone else.
+
+## 10. Return workflow
+
+A return is not just a reversed pickup. It creates a new allocation whose authorized depositor is the customer and whose collector is the carrier.
+
+Reuse locker allocation and access behavior, but keep return state explicit so notifications and expiry rules can differ.
+
+## 11. Patterns and principles
+
+| Technique | Purpose |
 |---|---|
-| Package | identity, size, owner, and delivery state |
-| Locker | size and current allocation |
-| LockerLocation | owns lockers and selects available capacity |
-| Allocation | package-to-locker assignment, code, expiry, and lifecycle |
-| AllocationPolicy | chooses a fitting locker |
-| LockerService | coordinates deposit, pickup, return, and expiry |
+| Strategy | smallest-fit, nearest, or capacity-balancing allocation |
+| Repository | persisted packages, lockers, and allocations |
+| Adapter | physical locker controller |
+| Domain event | optional notifications and operational projections |
+| Value object | size, address, access code metadata |
+| Dependency injection | clock, code generator, repositories, hardware |
 
-Key invariant: one locker and one package can each have at most one active allocation.
+Do not make SmallLocker, MediumLocker, and LargeLocker subclasses when their behavior is identical.
 
-    Package -> Allocation -> Locker
-    LockerLocation -> many Locker
-    LockerService -> AllocationPolicy + repositories + Clock
+## 12. Concurrency
 
-## Critical flow: deposit
+The select-and-allocate sequence is atomic.
 
-1. Load the package and location.
-2. Ask the policy for the smallest available locker that fits.
-3. Allocate the locker and create an expiring pickup code.
-4. Save both changes atomically.
-5. Return the locker reference and code-delivery result.
+In memory, use a per-location lock:
 
-Pickup validates the code and expiry, marks the package collected, closes the allocation, and releases the locker.
+    with location.lock:
+        locker = policy.choose(location.available_lockers(), package.size)
+        locker.allocate(allocation_id)
+        allocations.add(allocation)
 
-## Design decisions
+In a database, use a conditional locker update or row lock plus unique active-allocation constraints for locker_id and package_id.
 
-- PackageSize is ordered, so fit is a comparison rather than subtype logic.
-- Allocation owns code attempts and expiry because those rules belong to the assignment.
-- A policy isolates locker selection; first-fit is enough initially.
-- A Clock is injected so expiry tests are deterministic.
-- Codes should be stored as hashes in a real system.
+Expiry and pickup can race. Both must conditionally transition only an ACTIVE allocation; exactly one wins.
 
-## Correctness
+## 13. Failure handling
 
-The availability check and allocation must be one atomic operation. A per-location lock is simple; a database can instead use a conditional update or unique active-allocation constraint.
+| Failure | Result |
+|---|---|
+| no fitting locker | no allocation; package remains expected |
+| duplicate deposit | reject existing active allocation |
+| wrong code | record attempt; do not open |
+| expired code | expire allocation and release safely |
+| hardware open failure | retry or cancel before deposit confirmation |
+| notification failure | allocation remains valid; retry notification |
+| repeated expiry job | no additional state change |
+| maintenance during occupancy | block new use; preserve active pickup path |
 
-Do not release the locker before the pickup state change commits. Repeated pickup with the same completed allocation should return a stable outcome or a clear conflict.
+## 14. Complexity
 
-## Follow-ups
+With L lockers at a location:
 
-- Reserve adjacent lockers for multi-package orders.
-- Add failed-code lockout and staff override.
-- Select among nearby locations.
-- Integrate hardware through a LockerController adapter.
-- Publish deposited, collected, and expired events after commit.
+- naive smallest-fit selection: O(L);
+- allocate/release after selection: O(1);
+- allocation lookup by ID: O(1) average;
+- expiry sweep: O(A) for A active allocations.
 
-## Interview finish
+Queues or sets by locker size reduce selection toward O(1) or O(log L), but introduce index-consistency work.
 
-Implement PackageSize, Locker, Allocation, a first-fit policy, and deposit/pickup tests. Discuss persistence and hardware as boundaries, not as core domain classes.
+## 15. Verification plan
+
+Test:
+
+- exact-size and larger-size fit;
+- smallest fitting locker selection;
+- full location;
+- duplicate active package;
+- successful deposit and pickup;
+- wrong and expired codes;
+- failed-attempt lockout;
+- return deposit and carrier collection;
+- maintenance exclusion;
+- concurrent deposits with one locker;
+- pickup racing expiry;
+- idempotent release and expiry.
+
+Inject Clock and CodeGenerator so tests never sleep and never depend on random values.
+
+## 16. Extensibility
+
+- **Nearby locations:** add a LocationSelectionPolicy above per-location allocation.
+- **Multi-package orders:** coordinate several allocations and define all-or-nothing behavior.
+- **Dynamic expiry:** inject an ExpiryPolicy based on shipment type.
+- **Staff override:** use an audited AuthorizationService, not a universal master code.
+- **Sensors:** translate hardware events through AccessController.
+- **Notifications:** publish events after commit and retry independently.
+- **Reservations:** introduce a reservation expiry distinct from deposited-package expiry.
+
+## 17. Trade-offs
+
+- Per-location locking is simple but serializes unrelated lockers.
+- Exact locker assignment makes pickup direct but can waste capacity.
+- Hardware and database cannot share one transaction; confirmation and reconciliation are necessary.
+- Hashing codes improves security but prevents code recovery.
+- A ledger of allocation events improves auditability but adds persistence work.
+
+## 18. Interview expectations
+
+### Junior
+
+Model Package, Locker, Allocation, deposit, and pickup with fit and availability checks.
+
+### Mid-level
+
+Add explicit lifecycles, replaceable allocation, expiry, failure behavior, and focused tests.
+
+### Senior
+
+Discuss atomic allocation, pickup-versus-expiry races, hardware failure, idempotency, code security, and database constraints.
+
+## 19. Interview walkthrough
+
+1. Fix the package and locker sizes and the pickup-code lifetime.
+2. State one-active-allocation invariants.
+3. Put compartment state inside Locker and credential state inside Allocation.
+4. Walk deposit and pickup before coding.
+5. Implement smallest-fit allocation plus success and expiry tests.
+6. Extend toward hardware and multi-instance concurrency only after the core is coherent.
