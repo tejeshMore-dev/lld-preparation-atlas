@@ -1,72 +1,32 @@
-# LLD Design-Brief Template
+# Design Brief Template
 
-Copy this template before modeling classes or selecting patterns.
+Copy this before designing classes.
 
-```markdown
-# <Problem> - LLD Design Brief
+    # <Problem>
 
-## Objective
-<Define the system outcome in one or two sentences.>
+    ## Scope
+    Outcome:
+    Core use cases:
+    Out of scope:
 
-## Interview contract
+    ## Rules
+    Invariants:
+    Expected failures:
+    Concurrency assumption:
 
-- Time available:
-- Expected output: diagram / code sketch / runnable code
-- Language:
-- Storage constraint:
-- Concurrency expectation:
+    ## Model
+    State owners:
+    Policies that vary:
+    External boundaries:
 
-## Actors
+    ## Critical flow
+    1.
+    2.
+    3.
 
-- ...
+    ## Evidence
+    Success scenario:
+    Failure scenario:
+    Likely follow-up:
 
-## Domain vocabulary
-
-| Term | Meaning |
-|---|---|
-| ... | ... |
-
-## Must-have use cases
-
-1. ...
-
-## Business rules and invariants
-
-1. ...
-
-## Alternate and failure flows
-
-- ...
-
-## Relevant quality requirements
-
-- ...
-
-## External dependencies
-
-- ...
-
-## Assumptions
-
-- ...
-
-## Out of scope
-
-- ...
-
-## Open questions
-
-- ...
-
-## Acceptance scenarios
-
-- Given ... when ... then ...
-
-## Likely follow-up changes
-
-- ...
-```
-
-The brief should take approximately five to eight minutes during a normal
-interview. Its purpose is to freeze a sensible version-one boundary before
-implementation begins.
+Complete this in five minutes. It is a boundary-setting tool, not a full specification.

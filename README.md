@@ -1,136 +1,74 @@
-# Low-Level Design Preparation
+# Low-Level Design Interview Guide
 
-A structured Python 3.10+ repository for learning low-level design, practising
-interview execution, and reviewing runnable implementations with tests.
+A practical Python repository for learning object-oriented design and explaining it clearly in an interview.
 
-This repository contains two connected resources:
+The goal is not to memorize class diagrams or force design patterns. It is to turn a small set of requirements into code that is easy to change, test, and discuss.
 
-- A topic-by-topic [LLD Preparation Bible](./docs/README.md).
-- A catalogue of [working LLD solutions](./solutions/README.md).
-- A browser-based [LLD progress tracker](https://tejeshmore-dev.github.io/lld-preparation-atlas/)
-  with private `localStorage` persistence.
+## The interview loop
 
-## Live progress tracker
+Use the same loop for every problem:
 
-Open **[LLD Preparation Lab](https://tejeshmore-dev.github.io/lld-preparation-atlas/)**
-to tick topics off one by one, see phase and overall progress, search/filter the
-curriculum, continue from the first unfinished chapter, and export/import a JSON
-backup. Progress stays in the current browser unless you export it.
+1. **Clarify** the actors, use cases, rules, and scope.
+2. **Model** the state, responsibilities, and invariants.
+3. **Walk** one critical flow before writing code.
+4. **Implement** a thin end-to-end slice.
+5. **Verify** happy paths, failures, and shared-state risks.
+6. **Adapt** the design to one likely follow-up.
 
-## Choose your path
+That is the core of this repository.
 
-### Learn LLD systematically
+## Start here
 
-1. Open the [curriculum index](./docs/README.md).
-2. Follow the [preparation roadmap](./docs/roadmap.md).
-3. Complete each topic's exercises and mastery gate.
-4. Apply the topic to implementations under `solutions/`.
+- [Curriculum](./docs/README.md) — the shortest useful learning path.
+- [Roadmap](./docs/roadmap.md) — a four-phase study plan.
+- [Problem breakdowns](./solutions/README.md) — runnable and design-only examples.
+- [Practice kit](./docs/practice/README.md) — prompts, mocks, and scoring.
+- [Progress tracker](https://tejeshmore-dev.github.io/lld-preparation-atlas/) — private browser-local progress.
 
-### Review or practise a design problem
+If time is limited, study Topics 1, 3, 5, 8, 11, and 15, then solve three problems.
 
-1. Choose a problem from the [solution catalogue](./solutions/README.md).
-2. Read its requirements and invariants before inspecting code.
-3. Predict the object model and critical workflow.
-4. Run the demonstration and tests.
-5. Compare the implementation with your design.
-6. Attempt the advancement exercises in the solution guide.
+## What is covered
 
-## Repository structure
+The core path covers requirements, object modeling, OOP, design principles, useful patterns, concurrency, and interview delivery.
 
-```text
-lld-preparation-atlas/
-|-- README.md
-|-- docs/
-|   |-- README.md                       # Curriculum index
-|   |-- roadmap.md                      # Topic order and completion criteria
-|   |-- topics/                         # One file per major LLD topic
-|   |-- practice/                       # Problems, mocks, rubric, readiness
-|   `-- templates/                      # Reusable design and README templates
-|-- site/                               # Static local-progress tracker
-|-- solutions/
-|   |-- README.md                       # Implemented-solution catalogue
-|   |-- parking-lot/
-|   |-- library-management/
-|   `-- ...
-`-- scripts/
-    `-- run-all-tests.ps1               # Full repository verification
-```
+The extended path adds topics often skipped by introductory LLD guides:
 
-## Requirements
+- UML and interaction sketches
+- application-service and repository boundaries
+- API and error contracts
+- transactions and persistence
+- refactoring and test strategy
 
-- Python 3.10 or newer.
-- PowerShell for the repository-wide test script.
-- No third-party Python packages.
-- Node.js only when running the tracker's small logic test suite.
+## Repository map
 
-## Quick start
+    docs/topics/       concise concept chapters
+    docs/practice/     prompts, rubric, and readiness checks
+    docs/templates/    reusable interview notes
+    solutions/         problem breakdowns, code, and tests
+    site/              local-progress web app
+    scripts/           repository verification
 
-Run one demonstration from the repository root:
+## Run the code
 
-```powershell
-python "solutions/parking-lot/main.py"
-```
+Requires Python 3.10+ and no third-party Python packages.
 
-Run its tests:
+    python "solutions/parking-lot/main.py"
+    python -m unittest discover -s "solutions/parking-lot/tests" -t "solutions/parking-lot" -v
+    powershell -ExecutionPolicy Bypass -File "scripts/run-all-tests.ps1"
 
-```powershell
-python -m unittest discover -s "solutions/parking-lot/tests" -t "solutions/parking-lot" -v
-```
+Tracker tests:
 
-Run every solution test suite:
+    npm.cmd test --prefix site
 
-```powershell
-powershell -ExecutionPolicy Bypass -File "scripts/run-all-tests.ps1"
-```
+## A good solution
 
-Run the tracker locally:
+A strong LLD answer has:
 
-```powershell
-python -m http.server 4173 --directory site
-```
+- a small, explicit scope;
+- behavior close to the state it protects;
+- dependencies passed through narrow interfaces;
+- one clear owner for each invariant;
+- deliberate handling of failure and concurrency;
+- tests around behavior, not implementation trivia.
 
-Then open `http://localhost:4173`. Test its progress logic with:
-
-```powershell
-npm.cmd test --prefix site
-```
-
-## Curriculum progress
-
-| Topic | Status |
-|---|---|
-| [Requirements Analysis and Scope Definition](./docs/topics/01-requirements-analysis.md) | Complete |
-| [Python and Object-Oriented Foundations](./docs/topics/02-python-oop-foundations.md) | Complete |
-| [Domain Modeling and Responsibility Assignment](./docs/topics/03-domain-modeling-and-responsibility-assignment.md) | Complete |
-| [UML and Interaction Modeling](./docs/topics/04-uml-and-interaction-modeling.md) | Complete |
-| [Design Principles and Heuristics](./docs/topics/05-design-principles-and-heuristics.md) | Complete |
-| [Creational Design Patterns](./docs/topics/06-creational-design-patterns.md) | Complete |
-| [Structural Design Patterns](./docs/topics/07-structural-design-patterns.md) | Complete |
-| [Behavioral Design Patterns](./docs/topics/08-behavioral-design-patterns.md) | Complete |
-| [Application Patterns and Reusable Building Blocks](./docs/topics/09-application-patterns-and-reusable-building-blocks.md) | Complete |
-| [API Contracts and Error Modeling](./docs/topics/10-api-contracts-and-error-modeling.md) | Complete |
-| [Concurrency and Thread Safety](./docs/topics/11-concurrency-and-thread-safety.md) | Complete |
-| [Persistence and Transaction Boundaries](./docs/topics/12-persistence-and-transaction-boundaries.md) | Complete |
-| [Clean Code and Refactoring](./docs/topics/13-clean-code-and-refactoring.md) | Complete |
-| [Testing Low-Level Designs](./docs/topics/14-testing-low-level-designs.md) | Complete |
-| [Interview Execution, Problem Practice, and Readiness](./docs/topics/15-interview-execution-problem-practice-and-readiness.md) | Complete |
-
-**Bible content progress:** 15 of 15 topics complete (100%). Personal interview
-readiness still requires the evidence in the [roadmap](./docs/roadmap.md).
-
-## Practice and assessment
-
-- [Problem catalogue](./docs/practice/problem-catalog.md)
-- [Interview workflow](./docs/practice/interview-workflow.md)
-- [Mock-interview rubric](./docs/practice/mock-interview-rubric.md)
-- [Practice attempt-log template](./docs/practice/attempt-log-template.md)
-- [Final readiness checklist](./docs/practice/readiness-checklist.md)
-- [Design-brief template](./docs/templates/design-brief-template.md)
-
-## Adding a solution
-
-1. Use a lowercase kebab-case directory under `solutions/`.
-2. Keep the implementation self-contained with its own `main.py` and `tests/`.
-3. Follow the [solution README template](./docs/templates/solution-readme-template.md).
-4. Add the solution to `solutions/README.md` and `scripts/run-all-tests.ps1`.
-5. Run the entire test suite before considering the solution complete.
+Use patterns only when they make a change easier to absorb.

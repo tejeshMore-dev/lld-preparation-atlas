@@ -1,29 +1,24 @@
-# LLD Interview Workflow
+# Interview Workflow
 
-Use this structure for a 45-60 minute design or machine-coding round.
+| Time | Output |
+|---:|---|
+| 0–5 min | use cases, invariants, assumptions, exclusions |
+| 5–12 min | core objects and responsibility owners |
+| 12–17 min | one critical sequence and contracts |
+| 17–35 min | runnable vertical slice |
+| 35–42 min | success, rejection, and state-after-failure tests |
+| 42–45 min | trade-offs and one follow-up |
 
-| Stage | Target time | Output |
-|---|---:|---|
-| Restate and clarify | 5-8 minutes | Bounded requirements and assumptions |
-| Model responsibilities | 8-10 minutes | Core objects, ownership, relationships, state |
-| Define interactions | 5-8 minutes | Contracts and critical sequence |
-| Implement critical path | 20-25 minutes | Runnable or logically complete core behavior |
-| Test and review | 5-10 minutes | Edge cases, failures, trade-offs, follow-up change |
+## Checklist
 
-## Execution checklist
+1. Restate the problem and choose a version-one scope.
+2. Name the rules that must never break.
+3. Assign each mutable fact to one owner.
+4. Trace a command from caller to result.
+5. Implement through behavior, not public field mutation.
+6. Make external dependencies explicit.
+7. Protect any shared check-and-change.
+8. Test the main success and highest-risk failure.
+9. Explain one simpler alternative and one extension seam.
 
-1. Clarify the objective, actors, and must-have use cases.
-2. State assumptions and out-of-scope behavior.
-3. Extract business rules and invariants.
-4. Identify state owners and collaborators.
-5. Define narrow public contracts.
-6. Walk through one critical sequence before coding.
-7. Implement the happy path without bypassing invariants.
-8. Add validation, failure behavior, and tests.
-9. Discuss concurrency or persistence only when relevant.
-10. Apply a follow-up change and explain its impact.
-
-## Communication rule
-
-Narrate decisions and trade-offs, not every keystroke. If information is
-missing, state the simplest reasonable assumption and continue.
+Narrate decisions and causes, not every keystroke. When details are missing, state the smallest reasonable assumption and continue.

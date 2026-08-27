@@ -1,48 +1,27 @@
-# LLD Practice Problem Catalogue
+# Problem Catalogue
 
-Renamed products in the same family count as one problem. For example,
-Uber/Ola and Swiggy/Zomato are domain variants rather than separate mastery
-evidence.
+Choose problems by design pressure. Renamed products in the same family count as one problem.
 
-## Implemented in this repository
+## In this repository
 
-| Problem | Primary coverage | Solution |
-|---|---|---|
-| Parking Lot | Allocation, pricing, state, payment, concurrency | [Open](../../solutions/parking-lot/) |
-| Library Management | Loans, reservations, fines, observers, inheritance | [Open](../../solutions/library-management/) |
-| Splitwise | Split policies, money, balances, settlement | [Open](../../solutions/splitwise/) |
-| Elevator | Scheduling, requests, state, simulation | [Open](../../solutions/elevator/) |
-| ATM | State, gateways, cash selection, compensation | [Open](../../solutions/atm/) |
-| Movie Ticket Booking | Seat holds, expiry, locking, payment | [Open](../../solutions/movie-ticket-booking/) |
-| Hotel Management | Date ranges, availability, booking lifecycle | [Open](../../solutions/hotel-management/) |
-| Airline Reservation | Inventory, booking, pricing, check-in | [Open](../../solutions/airline-reservation/) |
-| Cab Booking | Matching, distance, fare, dispatch, payment | [Open](../../solutions/cab-booking/) |
-| Food Delivery | Cart, order workflow, matching, payment | [Open](../../solutions/food-delivery/) |
-| Coupon Platform | Eligibility, distribution, discounts, redemption | [Open](../../solutions/coupon-management-and-distribution-platform/) |
+| Pressure | Problems |
+|---|---|
+| Allocation and scarce inventory | [Parking Lot](../../solutions/parking-lot/), [Locker](../../solutions/amazon-locker/), [Inventory](../../solutions/inventory-management/) |
+| Reservation and payment | [Movie Booking](../../solutions/movie-ticket-booking/), [Airline](../../solutions/airline-reservation/), [Hotel](../../solutions/hotel-management/) |
+| State machines | [ATM](../../solutions/atm/), [Elevator](../../solutions/elevator/), [Connect Four](../../solutions/connect-four/) |
+| Matching and dispatch | [Cab Booking](../../solutions/cab-booking/), [Food Delivery](../../solutions/food-delivery/) |
+| Rules and calculations | [Coupon Platform](../../solutions/coupon-management-and-distribution-platform/), [Splitwise](../../solutions/splitwise/) |
+| Hierarchies and resources | [File System](../../solutions/file-system/), [Library](../../solutions/library-management/) |
+| Reusable components | [Logger](../../solutions/logging-service/), [Rate Limiter](../../solutions/rate-limiter/) |
 
-## Recommended next implementations
+## Good next prompts
 
-### Foundation
+- Vending machine — inventory, money, and state.
+- Job scheduler — priority, time, and concurrency.
+- Cache — eviction, expiry, and capacity.
+- Notification platform — channels, templates, and retry.
+- Pub/sub bus — subscriptions, delivery, and backpressure.
+- Digital wallet — ledger, idempotency, and transfers.
+- Rule engine — expression model and evaluation.
 
-- Tic-Tac-Toe.
-- Snake and Ladder.
-- Vending Machine.
-- In-Memory File System.
-
-### Reusable components
-
-- Logging Framework.
-- LRU/LFU/TTL Cache.
-- Notification Platform.
-- Job Scheduler.
-
-### Advanced
-
-- Rate Limiter.
-- Pub-Sub Event Bus.
-- Digital Wallet or Payment Gateway.
-- In-Memory Database or Key-Value Store.
-- Workflow or Rule Engine.
-
-Choose new problems to close a capability gap, not merely to increase the
-problem count.
+Pick the next prompt that exposes a weakness in your last attempt.

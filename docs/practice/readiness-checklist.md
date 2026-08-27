@@ -1,40 +1,25 @@
-# Final LLD Readiness Checklist
+# Readiness Checklist
 
-Preparation is complete only when the evidence is repeatable.
+You are ready when the evidence is repeatable.
 
-## Knowledge
+## Design and code
 
-- [ ] Every essential topic mastery gate is complete.
-- [ ] Core principles and patterns can be explained without notes.
-- [ ] Pattern choice can be justified, including when not to use it.
+- [ ] I narrow a new prompt to a useful version one in five minutes.
+- [ ] Every important invariant has one owner.
+- [ ] I can trace success and failure through the design.
+- [ ] My core workflow runs or is logically complete.
+- [ ] Focused tests prove success, rejection, and valid state after failure.
+- [ ] I discuss concurrency only at the shared check-and-change.
+- [ ] I can justify every abstraction and name a simpler alternative.
 
-## Design
+## Performance
 
-- [ ] At least 12 varied problems were designed independently.
-- [ ] Requirements become responsibilities, contracts, state, and tests.
-- [ ] Important invariants have one clear owner.
-- [ ] Failure behavior and relevant concurrency are not ignored.
+- [ ] I completed at least five timed mocks.
+- [ ] My last three unseen mocks scored 80/100 or higher.
+- [ ] None required a major hint or contained a critical failure.
+- [ ] At least three attempts included a follow-up change.
+- [ ] Each attempt has a short [attempt log](./attempt-log-template.md).
 
-## Implementation
+## Final statement
 
-- [ ] At least 8 problems were implemented end to end.
-- [ ] Core workflows compile and run.
-- [ ] Tests cover happy paths, boundaries, invalid operations, and failures.
-- [ ] Code avoids god classes, hidden dependencies, and leaked mutable state.
-
-## Interview performance
-
-- [ ] At least 5 timed mocks were completed.
-- [ ] Three consecutive unseen mocks scored at least 80/100 with no critical
-  failure and no major hint.
-- [ ] At least 3 mocks included follow-up requirement changes.
-- [ ] A normal problem can be completed in 45-60 minutes.
-- [ ] Assumptions and trade-offs are communicated clearly.
-- [ ] Every readiness mock has a preserved [attempt log](./attempt-log-template.md)
-  with evidence, hints, follow-up, score, and repair history.
-
-## Final readiness statement
-
-> I can take an unfamiliar LLD prompt from clarification to a tested,
-> explainable implementation under interview time, and I can adapt it when the
-> requirements change.
+> I can take an unfamiliar LLD prompt from clarification to a tested, explainable core design and adapt it when requirements change.

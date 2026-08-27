@@ -1,29 +1,17 @@
-# LLD Practice Hub
+# Practice Kit
 
-Use these guides after completing the relevant topic chapters.
+Reading explains the tools; timed attempts build the skill.
 
-Start with
-[Topic 15 - Interview Execution, Problem Practice, and Readiness](../topics/15-interview-execution-problem-practice-and-readiness.md)
-for the complete practice and assessment method.
+Use:
 
-The live [LLD Preparation Lab](https://tejeshmore-dev.github.io/lld-preparation-atlas/)
-tracks chapter completion in browser local storage. Use the attempt log below
-for evidence that is richer than a topic checkbox.
+- [Problem catalogue](./problem-catalog.md) to vary design pressure.
+- [Interview workflow](./interview-workflow.md) to control time.
+- [Mock rubric](./mock-interview-rubric.md) to score observable work.
+- [Attempt log](./attempt-log-template.md) to record one lesson.
+- [Readiness checklist](./readiness-checklist.md) to judge consistency.
 
-- [Problem catalogue](./problem-catalog.md) - choose varied designs without
-  counting renamed duplicates as new problems.
-- [Interview workflow](./interview-workflow.md) - structure a 45-60 minute LLD
-  round.
-- [Mock-interview rubric](./mock-interview-rubric.md) - score designs
-  consistently.
-- [Attempt-log template](./attempt-log-template.md) - preserve scope, timestamps,
-  artifacts, hints, scores, follow-ups, and repair evidence.
-- [Readiness checklist](./readiness-checklist.md) - decide when preparation is
-  genuinely complete.
+For each problem:
 
-For every practice problem, track:
+    Clarify -> Model -> Walk -> Implement -> Verify -> Adapt
 
-`Clarify -> Model -> Implement -> Test -> Timed -> Adapt`
-
-Do not mark a problem complete after only reading or reproducing a known
-solution.
+Do not count reading or reproducing a known solution as an independent attempt.

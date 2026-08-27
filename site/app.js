@@ -165,7 +165,7 @@ function updateDashboard() {
   if (summary.completed === 0) {
     elements.message.textContent = "Your first chapter is ready.";
   } else if (summary.completed === summary.total) {
-    elements.message.textContent = "Bible study path completed.";
+    elements.message.textContent = "Curriculum completed.";
   } else {
     elements.message.textContent = `${summary.percent}% of the study path complete.`;
   }

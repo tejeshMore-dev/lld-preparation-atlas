@@ -1,57 +1,40 @@
-# Solution README Template
+# Solution Guide Template
 
-Use this structure for every implementation under `solutions/`. Remove sections
-that genuinely do not apply, but keep the ordering consistent.
+Use this short shape for every problem.
 
-```markdown
-# <Problem Name> Low-Level Design
+    # <Problem>
 
-## 1. Problem and scope
+    <One sentence describing the core design pressure.>
 
-## 2. Run the demonstration and tests
+    ## Scope
 
-## 3. Domain vocabulary
+    Core behavior and explicit exclusions.
 
-## 4. Requirements and assumptions
+    ## Model
 
-### Functional requirements
+    | Type | Responsibility |
+    |---|---|
 
-### Business rules and invariants
+    State the key invariant.
 
-### Out of scope
+    ## Critical flow
 
-## 5. Project structure
+    Trace one command from input to result, including its main failure.
 
-## 6. Architecture and responsibilities
+    ## Design choices
 
-## 7. Class relationships
+    Explain only abstractions that isolate a named change or boundary.
 
-## 8. Important workflows
+    ## Correctness
 
-## 9. State and lifecycle
+    Name the atomic check-and-change, failure ordering, and retry behavior.
 
-## 10. OOP and SOLID decisions
+    ## Run
 
-## 11. Design patterns
+    Add demonstration and test commands when code exists.
 
-## 12. Validation and error handling
+    ## Follow-ups
 
-## 13. Concurrency and consistency
+    List three realistic changes and where each belongs.
 
-## 14. Tests as executable requirements
-
-## 15. Complexity
-
-## 16. Trade-offs and limitations
-
-## 17. Follow-up requirements
-
-## 18. Interview explanation template
-```
-
-Every solution guide should answer four questions clearly:
-
-1. Which requirement caused each important class or contract to exist?
-2. Which object owns each invariant and mutable fact?
-3. What happens when the critical workflow fails halfway through?
-4. How would the design respond to a realistic requirement change?
+A guide is complete when a reader can answer: what is in scope, who owns each rule, what fails halfway through, and where the next change goes.

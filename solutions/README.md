@@ -1,67 +1,50 @@
-# Implemented LLD Solutions
+# LLD Problem Breakdowns
 
-Each directory contains a self-contained Python implementation, tests, a
-demonstration entry point, and a detailed design guide.
+Each guide follows the same interview-first shape: scope, model, critical flow, decisions, correctness, and follow-ups.
 
-## Catalogue
+## Runnable Python solutions
 
-| Solution | Primary coverage | Guide |
-|---|---|---|
-| Parking Lot | Allocation, pricing, payments, state, thread safety | [Open](./parking-lot/README.md) |
-| Library Management | Loans, reservations, fines, observers, inheritance | [Open](./library-management/README.md) |
-| Splitwise | Split policies, money, balances, settlement | [Open](./splitwise/README.md) |
-| Elevator | Scheduling, request lifecycle, state, simulation | [Open](./elevator/README.md) |
-| ATM | Session state, gateways, cash selection, compensation | [Open](./atm/README.md) |
-| Movie Ticket Booking | Seat holds, expiry, locking, payments, refunds | [Open](./movie-ticket-booking/README.md) |
-| Hotel Management | Date ranges, availability, booking lifecycle, folios | [Open](./hotel-management/README.md) |
-| Airline Reservation | Seat inventory, booking, pricing, check-in | [Open](./airline-reservation/README.md) |
-| Cab Booking | Distance, driver matching, dispatch, fare, payment | [Open](./cab-booking/README.md) |
-| Food Delivery | Cart, ordering, partner matching, payment, refund | [Open](./food-delivery/README.md) |
-| Coupon Platform | Eligibility, distribution, discount, redemption | [Open](./coupon-management-and-distribution-platform/README.md) |
+| Problem | Main design pressure |
+|---|---|
+| [Airline Reservation](./airline-reservation/) | per-flight seat inventory and booking lifecycle |
+| [ATM](./atm/) | session state, cash selection, and compensation |
+| [Cab Booking](./cab-booking/) | driver matching and exclusive assignment |
+| [Coupon Platform](./coupon-management-and-distribution-platform/) | eligibility, supply, and redemption |
+| [Elevator](./elevator/) | scheduling and car state |
+| [Food Delivery](./food-delivery/) | order lifecycle and courier assignment |
+| [Hotel Management](./hotel-management/) | date-range inventory and folio |
+| [Library Management](./library-management/) | title versus copy and loan rules |
+| [Movie Ticket Booking](./movie-ticket-booking/) | seat holds and double-booking |
+| [Parking Lot](./parking-lot/) | spot allocation, tickets, and pricing |
+| [Splitwise](./splitwise/) | exact splits and balance invariants |
 
-## Standard solution layout
+Run any solution with:
 
-```text
-solutions/<problem>/
-|-- README.md
-|-- main.py
-|-- models/
-|-- services/
-|-- strategies/       # when the problem has replaceable policies
-|-- factories/        # when construction requires a dedicated boundary
-|-- observers/        # when event subscribers are present
-`-- tests/
-```
+    python "solutions/<name>/main.py"
+    python -m unittest discover -s "solutions/<name>/tests" -t "solutions/<name>" -v
 
-Optional directories should exist only when the design needs them.
+Run all runnable suites:
 
-## Run a solution
+    powershell -ExecutionPolicy Bypass -File "scripts/run-all-tests.ps1"
 
-From the repository root:
+## Design walkthroughs
 
-```powershell
-python "solutions/parking-lot/main.py"
-python -m unittest discover -s "solutions/parking-lot/tests" -t "solutions/parking-lot" -v
-```
+These are concise Markdown designs intended for a blank-file interview exercise.
 
-Replace `parking-lot` with another directory name from the catalogue.
+| Problem | Main design pressure |
+|---|---|
+| [Amazon Locker](./amazon-locker/) | package sizing, codes, and expiry |
+| [Connect Four](./connect-four/) | board rules, turns, and win detection |
+| [File System](./file-system/) | recursive hierarchy and path resolution |
+| [Inventory Management](./inventory-management/) | stock ledger and reservations |
+| [Logging Service](./logging-service/) | filtering, formatting, and fan-out |
+| [Rate Limiter](./rate-limiter/) | atomic admission under time windows |
 
-Run all solution tests with:
+## How to use a guide
 
-```powershell
-powershell -ExecutionPolicy Bypass -File "scripts/run-all-tests.ps1"
-```
-
-## Review method
-
-For each solution:
-
-1. Read the requirements, assumptions, and out-of-scope list.
-2. Identify the owner of every important invariant.
-3. Walk through the critical success and failure sequences.
-4. Locate the contracts introduced for variation or external boundaries.
-5. Run the tests as executable requirements.
-6. Attempt one follow-up change before reading the suggested extension.
-
-The [problem catalogue](../docs/practice/problem-catalog.md) tracks current and
-recommended future coverage.
+1. Read only the scope.
+2. Design for 15 minutes from a blank page.
+3. Compare models and invariants.
+4. Trace the critical flow.
+5. Implement one slice and one failure test.
+6. Try a follow-up without rereading the guide.
