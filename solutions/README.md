@@ -4,6 +4,10 @@ Each guide is a complete, original interview walkthrough covering scope,
 requirements, invariants, model, class responsibilities, critical workflows,
 correctness, tests, trade-offs, extensions, and interview expectations.
 
+Every page starts with the same teaching flow: understand the problem, clarify
+requirements, identify entities, improve the class design from good to great,
+implement, verify, extend, and calibrate the answer by interview level.
+
 ## Runnable Python solutions
 
 | Problem | Main design pressure |

@@ -1,5 +1,113 @@
 # In-Memory File System Low-Level Design
 
+Maintain a recursive directory tree while resolving absolute paths and safely creating, reading, moving, renaming, and deleting entries.
+
+## Understanding the Problem
+
+Maintain a recursive directory tree while resolving absolute paths and safely creating, reading, moving, renaming, and deleting entries.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- Are paths absolute or relative?
+- How are dot, dot-dot, and repeated separators handled?
+- Can non-empty directories be deleted?
+- Are links and permissions in scope?
+- Must concurrent moves be safe?
+
+### Final Requirements
+
+1. Normalize and resolve absolute paths.
+2. Create directories and text files.
+3. Read, replace, append, and list.
+4. Move and rename without collisions or cycles.
+5. Delete files and explicitly handle non-empty directories.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| Path | Owns normalized immutable path segments. |
+| Entry | Shared identity, name, parent, and metadata. |
+| File | Owns content operations. |
+| Directory | Owns uniquely named children. |
+| FileSystem | Coordinates traversal and cross-parent mutations. |
+| EntryVisitor | Optional extension for tree-wide operations. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Use File and Directory under a small Entry abstraction; keep path parsing separate from traversal.
+
+### Great Solution
+
+Use stable identity, controlled parent mutation, atomic cross-parent move with cycle checks, deterministic errors, and lock ordering.
+
+### Final Class Design
+
+The critical collaboration is: parse path -> resolve parent/entry -> validate type and invariant -> mutate one or two parents atomically -> return immutable result.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    parse path -> resolve parent/entry -> validate type and invariant -> mutate one or two parents atomically -> return immutable result
+
+### Complete Code Implementation
+
+This repository currently treats this problem as a Markdown design exercise. The contracts, algorithms, atomic boundaries, pseudocode, and complete verification plan are in the detailed reference below. Implement the entity that owns the main invariant first, then the coordinating service.
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Permissions, ownership, and quotas
+- Symbolic links and watchers
+- Snapshots, journaling, and durable content
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain cycle prevention, atomic move/rollback, stable identity, concurrent lock order, unique parent/name constraints, and crash recovery.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: parse path -> resolve parent/entry -> validate type and invariant -> mutate one or two parents atomically -> return immutable result.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 Design a hierarchical file system with absolute paths, directories, files, and safe structural mutations.
 
 ## 1. Understanding the problem
@@ -213,7 +321,7 @@ Flow:
 8. Change name/parent and add to destination.
 9. Roll back all fields if an unexpected failure occurs.
 
-Steps 5–8 are one atomic boundary.
+Steps 5â€“8 are one atomic boundary.
 
 Cycle check can walk destination parents toward root. If source appears, the move is invalid.
 
@@ -362,3 +470,5 @@ Discuss atomic cross-parent move, lock order, persistence constraints, links, cr
 5. Add move as the critical multi-object mutation.
 6. Test rollback and cycles.
 7. Discuss fine-grained locking and durability only after the in-memory model works.
+
+</details>

@@ -1,5 +1,114 @@
 # Rate Limiter Low-Level Design
 
+Decide whether a key may spend request capacity now, using deterministic time and an atomic per-key algorithm.
+
+## Understanding the Problem
+
+Decide whether a key may spend request capacity now, using deterministic time and an atomic per-key algorithm.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- What forms the key?
+- Which algorithm and burst behavior are required?
+- Do requests have weights?
+- Is state local or distributed?
+- Should store failure fail open or closed?
+
+### Final Requirements
+
+1. Resolve a validated rate policy per key/context.
+2. Implement token-bucket admission.
+3. Return allowed, remaining, and retry-after.
+4. Make refill/check/consume atomic.
+5. Evict safely idle state and inject monotonic time.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| RateLimitPolicy | Capacity and refill configuration. |
+| BucketState | Tokens, time, version, and last access. |
+| RateLimitDecision | Immutable admission result. |
+| RateLimiter | Coordinates one decision. |
+| PolicyProvider | Resolves key/route policy. |
+| StateStore | Owns atomic state transition. |
+| Clock | Provides monotonic time. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Keep algorithm state per key and inject a fakeable monotonic clock.
+
+### Great Solution
+
+Put the full transition inside StateStore atomicity, preserve fractional refill, define idle eviction, policy migration, failure mode, and distributed clock authority.
+
+### Final Class Design
+
+The critical collaboration is: validate -> resolve policy -> atomic load/create -> refill -> consume or deny -> persist -> return metadata.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    validate -> resolve policy -> atomic load/create -> refill -> consume or deny -> persist -> return metadata
+
+### Complete Code Implementation
+
+This repository currently treats this problem as a Markdown design exercise. The contracts, algorithms, atomic boundaries, pseudocode, and complete verification plan are in the detailed reference below. Implement the entity that owns the main invariant first, then the coordinating service.
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Distributed atomic store
+- Hierarchical and weighted limits
+- Dynamic policy, shadow mode, and metrics
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain exact versus approximate global limits, hierarchical atomicity, clock skew, cleanup races, overshoot, and fail-open/closed trade-offs.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: validate -> resolve policy -> atomic load/create -> refill -> consume or deny -> persist -> return metadata.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 Design an admission controller that limits requests per key and returns useful retry metadata under concurrent load.
 
 ## 1. Understanding the problem
@@ -178,7 +287,7 @@ Step by step:
 1. Validate key and positive cost.
 2. Resolve a validated policy.
 3. Read monotonic now once.
-4. Enter the key’s atomic state transition.
+4. Enter the keyâ€™s atomic state transition.
 5. Create a full bucket if absent.
 6. Refill using elapsed time.
 7. Consume or calculate retry_after.
@@ -403,3 +512,5 @@ Discuss distributed atomicity, clock authority, hierarchical limits, policy migr
 5. Test burst, refill, denial, and concurrent capacity.
 6. Add cleanup and failure policy.
 7. Explain distributed storage as a replacement for StateStore, not a rewrite of the algorithm.
+
+</details>

@@ -1,5 +1,122 @@
 # Airline Reservation Low-Level Design
 
+Search scheduled flights, claim per-flight seat inventory, take payment, and move a booking through check-in and boarding without selling the same seat twice.
+
+## Understanding the Problem
+
+Search scheduled flights, claim per-flight seat inventory, take payment, and move a booking through check-in and boarding without selling the same seat twice.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- Is one-way direct travel enough for version one?
+- Are seats chosen explicitly or assigned automatically?
+- How long may a seat remain held before payment?
+- Which cancellation and check-in windows apply?
+- Can several customers book the same flight concurrently?
+
+### Final Requirements
+
+1. Search flights by route and date.
+2. Quote and hold seats for one scheduled flight.
+3. Confirm a booking after successful payment.
+4. Cancel eligible bookings and release seats.
+5. Check in confirmed passengers and issue boarding passes.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| Flight | Owns schedule and per-departure seat inventory. |
+| FlightSeat | Tracks one seat's state on one flight. |
+| Booking | Owns passenger, quote, and booking lifecycle. |
+| Passenger | Provides traveler identity and history. |
+| Payment | Records charge or refund outcome. |
+| BoardingPass | Represents successful check-in. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Separate reusable aircraft-seat definitions from seat state on a scheduled flight.
+
+### Great Solution
+
+Use explicit booking and flight-seat lifecycles, an injected clock, pricing policy, payment gateway, and atomic seat claim.
+
+### Final Class Design
+
+The critical collaboration is: search -> quote -> atomically hold FlightSeat -> create Booking -> charge -> confirm or release.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    search -> quote -> atomically hold FlightSeat -> create Booking -> charge -> confirm or release
+
+### Complete Code Implementation
+
+- [Models](./models/)
+- [Services](./services/)
+- [Strategies](./strategies/)
+- [Demonstration](./main.py)
+- [Tests](./tests/)
+
+Run:
+
+    python "solutions/airline-reservation/main.py"
+    python -m unittest discover -s "solutions/airline-reservation/tests" -t "solutions/airline-reservation" -v
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Connecting itineraries and fare classes
+- Waitlists, upgrades, and baggage
+- Schedule disruption and re-accommodation
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain seat-hold expiry, idempotent payment confirmation, and database constraints for concurrent booking.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: search -> quote -> atomically hold FlightSeat -> create Booking -> charge -> confirm or release.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 This is a beginner-friendly, working Python design for airline search,
 reservation, payment, check-in, boarding, and flight operations. It covers
 airports, airlines, aircraft, physical seats, per-flight seat inventory, cabin
@@ -603,7 +720,7 @@ A realistic next architecture could evolve as follows:
 - The system crashed halfway through refunding a cancelled flight.
 
 These need durable workflows, idempotency keys, sagas/compensation,
-reconciliation, and operational toolingâ€”not merely additional model classes.
+reconciliation, and operational toolingÃ¢â‚¬â€not merely additional model classes.
 
 ## 22. Suggested learning exercises
 
@@ -651,4 +768,6 @@ A strong explanation usually follows this order:
 10. Evolve toward transactions, PNRs, itineraries, tickets, and webhooks.
 
 Strong LLD is demonstrated through clear ownership, invariants, transitions,
-and failure handlingâ€”not by memorizing a class diagram.
+and failure handlingÃ¢â‚¬â€not by memorizing a class diagram.
+
+</details>

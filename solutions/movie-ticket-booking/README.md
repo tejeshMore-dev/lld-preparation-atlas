@@ -1,5 +1,123 @@
 # Movie Ticket Booking Low-Level Design
 
+Search shows, temporarily hold selected show seats, take payment, and confirm a booking without double-selling a seat.
+
+## Understanding the Problem
+
+Search shows, temporarily hold selected show seats, take payment, and confirm a booking without double-selling a seat.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- Are seats selected explicitly?
+- How long does a hold last?
+- Can payment be retried during the hold?
+- Which cancellation/refund window applies?
+- Are seat categories and dynamic prices required?
+
+### Final Requirements
+
+1. Search shows by city, movie, and date.
+2. Hold selected seats for a bounded time.
+3. Calculate and freeze an exact quote.
+4. Confirm after successful payment.
+5. Cancel eligible bookings and release seats.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| Movie | Catalog metadata. |
+| Theatre and Screen | Physical venue and seat layout. |
+| Show | Owns per-show seat inventory. |
+| ShowSeat/Seat state | Tracks availability for one show. |
+| Booking | Owns selected seats, quote, and lifecycle. |
+| Payment | Records charge/refund. |
+| BookingService | Coordinates hold, confirm, and cancel. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Separate a physical Seat from its availability in one Show.
+
+### Great Solution
+
+Use expiring holds, atomic multi-seat claim, exact quote snapshots, idempotent payment, explicit cancellation/refund, and overlap validation for screens.
+
+### Final Class Design
+
+The critical collaboration is: search -> atomically hold show seats -> create pending booking/quote -> pay -> confirm, or expire/cancel and release.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    search -> atomically hold show seats -> create pending booking/quote -> pay -> confirm, or expire/cancel and release
+
+### Complete Code Implementation
+
+- [Models](./models/)
+- [Services](./services/)
+- [Strategies](./strategies/)
+- [Demonstration](./main.py)
+- [Tests](./tests/)
+
+Run:
+
+    python "solutions/movie-ticket-booking/main.py"
+    python -m unittest discover -s "solutions/movie-ticket-booking/tests" -t "solutions/movie-ticket-booking" -v
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Seat categories and dynamic pricing
+- Waitlists and partial cancellation
+- Multi-cinema search and loyalty
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain multi-seat atomicity, hold expiry races, payment/confirmation failure, unique active-seat constraints, and idempotency.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: search -> atomically hold show seats -> create pending booking/quote -> pay -> confirm, or expire/cancel and release.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 This is a beginner-friendly, working Python design for a cinema booking system.
 It covers movie discovery, theatres and screens, show scheduling, seat selection,
 temporary seat holds, pricing, payment retry, confirmation, cancellation,
@@ -553,7 +671,7 @@ A practical next architecture could evolve in stages:
 - The theatre changed the screen and seat map.
 
 These require durable state, idempotency, reconciliation jobs, and explicit
-eventual-consistency rulesâ€”not merely more classes.
+eventual-consistency rulesÃ¢â‚¬â€not merely more classes.
 
 ## 20. Suggested learning exercises
 
@@ -600,4 +718,6 @@ When explaining this LLD, a strong sequence is:
 9. Evolve the design toward transactions, persistence, webhooks, and events.
 
 The quality of an LLD comes from clear invariants, ownership, and failure
-handlingâ€”not from memorizing a class diagram.
+handlingÃ¢â‚¬â€not from memorizing a class diagram.
+
+</details>

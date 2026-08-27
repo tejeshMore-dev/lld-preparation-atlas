@@ -1,5 +1,114 @@
 # Inventory Management Low-Level Design
 
+Track on-hand and reserved stock by SKU and warehouse, prevent oversell, and make every receipt, reservation, release, shipment, or adjustment auditable.
+
+## Understanding the Problem
+
+Track on-hand and reserved stock by SKU and warehouse, prevent oversell, and make every receipt, reservation, release, shipment, or adjustment auditable.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- Is stock tracked per warehouse?
+- Can an order split across locations?
+- Are partial reservations allowed?
+- Do lots or serial numbers matter?
+- Must multi-SKU reservation be all-or-nothing?
+
+### Final Requirements
+
+1. Receive stock into a SKU/location balance.
+2. Reserve available units for an order.
+3. Release or expire reservations.
+4. Ship reserved units and reduce physical stock.
+5. Record adjustments and an immutable movement history.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| SKU | Stable product identity. |
+| Warehouse | Stock location. |
+| StockItem | Owns on-hand, reserved, version, and quantity invariants. |
+| Reservation | Owns allocated lines, expiry, and lifecycle. |
+| AllocationPolicy | Builds a feasible location plan. |
+| StockMovement | Append-only audit fact. |
+| InventoryService | Coordinates transactional workflows. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Store on-hand and reserved; derive available instead of persisting it.
+
+### Great Solution
+
+Use conditional quantity updates, atomic multi-line reservation, idempotent commands, reservation expiry, and ledger/balance reconciliation.
+
+### Final Class Design
+
+The critical collaboration is: load candidates -> allocation plan -> atomically revalidate and increment reserved -> create reservation/movements -> ship, release, or expire.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    load candidates -> allocation plan -> atomically revalidate and increment reserved -> create reservation/movements -> ship, release, or expire
+
+### Complete Code Implementation
+
+This repository currently treats this problem as a Markdown design exercise. The contracts, algorithms, atomic boundaries, pseudocode, and complete verification plan are in the detailed reference below. Implement the entity that owns the main invariant first, then the coordinating service.
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Lots, batches, serials, and FEFO
+- Backorders, safety stock, and transfers
+- Replenishment and cycle-count reconciliation
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain oversell prevention, multi-SKU transactions, optimistic versus conditional updates, expiry races, idempotency, and ledger reconciliation.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: load candidates -> allocation plan -> atomically revalidate and increment reserved -> create reservation/movements -> ship, release, or expire.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 Design warehouse stock tracking with receipt, reservation, release, shipment, adjustment, and an auditable movement history.
 
 ## 1. Understanding the problem
@@ -364,3 +473,5 @@ Discuss atomic multi-line reservation, optimistic/conditional updates, idempoten
 5. Walk reserve, release, and ship.
 6. Test oversell and rollback.
 7. Add ledger, persistence, and distributed concerns as explicit extensions.
+
+</details>

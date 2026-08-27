@@ -1,5 +1,123 @@
 # ATM Low-Level Design
 
+Coordinate an authenticated customer session, bank authorization, and bounded physical cash while keeping balances and machine inventory consistent.
+
+## Understanding the Problem
+
+Coordinate an authenticated customer session, bank authorization, and bounded physical cash while keeping balances and machine inventory consistent.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- Which transactions are in scope?
+- How many failed PIN attempts are allowed?
+- Which denominations exist?
+- Does the ATM accept deposits into a recycler?
+- What happens if bank debit succeeds but cash dispensing fails?
+
+### Final Requirements
+
+1. Authenticate a card and manage one session.
+2. Provide balance inquiry, withdrawal, deposit, and transfer.
+3. Select an exact bounded note combination.
+4. Update bank and cash state safely.
+5. Record transaction success or failure.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| ATM | Owns session state and orchestrates transactions. |
+| Card | Carries customer/account identity and status. |
+| Account | Owns balance and account rules. |
+| CashDispenser | Owns denomination inventory. |
+| CashSelectionStrategy | Finds an exact note combination. |
+| BankGateway | Isolates bank authorization and mutations. |
+| Transaction | Records one auditable operation. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Separate ATM session state, account state, and cash inventory instead of one status-heavy controller.
+
+### Great Solution
+
+Model compensation for partial device failure, inject the bank gateway and cash strategy, and keep cash selection plus deduction atomic.
+
+### Final Class Design
+
+The critical collaboration is: authenticate -> validate request -> select/reserve notes -> debit bank -> dispense -> record, or compensate on hardware failure.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    authenticate -> validate request -> select/reserve notes -> debit bank -> dispense -> record, or compensate on hardware failure
+
+### Complete Code Implementation
+
+- [Models](./models/)
+- [Services](./services/)
+- [Strategies](./strategies/)
+- [Demonstration](./main.py)
+- [Tests](./tests/)
+
+Run:
+
+    python "solutions/atm/main.py"
+    python -m unittest discover -s "solutions/atm/tests" -t "solutions/atm" -v
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Daily withdrawal limits and fraud rules
+- Device adapters and receipt printing
+- Offline operation and reconciliation
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain the cross-system failure window between bank debit and physical dispense, including idempotency and compensation.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: authenticate -> validate request -> select/reserve notes -> debit bank -> dispense -> record, or compensate on hardware failure.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 This project is a beginner-friendly, working implementation of an Automated
 Teller Machine. It demonstrates card sessions, PIN authentication, bank
 accounts, balance inquiries, cash withdrawal/deposit, transfers, exact-note
@@ -31,7 +149,7 @@ from its notes, no money should leave the account.
 The implementation supports:
 
 - Account creation and card issuance.
-- Salted PBKDF2 PIN hashesâ€”no plaintext PIN storage.
+- Salted PBKDF2 PIN hashesÃ¢â‚¬â€no plaintext PIN storage.
 - Three-attempt card blocking.
 - Expired card and inactive account handling.
 - Balance inquiry.
@@ -275,7 +393,7 @@ Every transaction records:
 - Final status and reason.
 - Cash note breakdown when applicable.
 
-Input errors that prevent a meaningful attemptâ€”such as a negative amountâ€”raise
+Input errors that prevent a meaningful attemptÃ¢â‚¬â€such as a negative amountÃ¢â‚¬â€raise
 an error before transaction creation. Valid attempts rejected by balance,
 limits, or inventory are stored as `DECLINED`.
 
@@ -510,7 +628,7 @@ Let `D` be denomination count, `A` requested whole amount, `N` transactions, and
 | Debit/credit/transfer | `O(1)` average | Direct account lookup |
 | Exact note selection | Pseudo-polynomial/backtracking | Depends on amount, denominations, inventory; memoized states |
 | Transaction history query | `O(N)` | ATM transaction list scan |
-| Total physical cash | `O(D)` | Sum denomination Ã— count |
+| Total physical cash | `O(D)` | Sum denomination Ãƒâ€” count |
 
 Large-value cash selection can instead operate in units of the greatest common
 divisor, use bounded dynamic programming, or use bank-configured heuristics.
@@ -591,5 +709,7 @@ When presenting this design:
 9. Discuss distributed failures, journaling, and reconciliation.
 10. State current boundaries and production extensions.
 
-The strongest ATM LLD discussion focuses on failure ordering and consistencyâ€”not
+The strongest ATM LLD discussion focuses on failure ordering and consistencyÃ¢â‚¬â€not
 only classes named `Card`, `Account`, and `ATM`.
+
+</details>

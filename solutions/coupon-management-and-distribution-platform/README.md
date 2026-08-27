@@ -1,5 +1,123 @@
-# Coupon Management and Distribution Platform Low-Level Design
+# Coupon Platform Low-Level Design
 
+Create campaigns, distribute codes, validate eligibility, reserve coupon usage, and redeem discounts without exceeding supply or per-user limits.
+
+## Understanding the Problem
+
+Create campaigns, distribute codes, validate eligibility, reserve coupon usage, and redeem discounts without exceeding supply or per-user limits.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- Are coupons public, assigned, or both?
+- Can coupons stack?
+- Are discounts fixed or percentage based?
+- When is usage reserved versus redeemed?
+- Which campaign, user, and budget limits apply?
+
+### Final Requirements
+
+1. Create and activate bounded campaigns.
+2. Distribute or claim unique coupon codes.
+3. Evaluate composable eligibility rules.
+4. Quote and reserve a coupon for checkout.
+5. Redeem, release, expire, or revoke safely.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| Campaign | Owns validity, supply, limits, and status. |
+| Coupon | Owns code, user ownership, and lifecycle. |
+| EligibilityRule | Evaluates user and checkout context. |
+| DiscountStrategy | Calculates an exact capped discount. |
+| DistributionStrategy | Selects recipients. |
+| Redemption | Records successful use. |
+| CouponPlatformService | Coordinates claim and checkout workflows. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Separate Campaign, Coupon, reservation, and redemption facts; compose eligibility and discount policies.
+
+### Great Solution
+
+Atomically protect supply and per-user counts, use idempotent reserve/redeem commands, and preserve an audit trail.
+
+### Final Class Design
+
+The critical collaboration is: load context -> validate campaign/coupon/eligibility -> quote -> atomically reserve -> redeem after order success or release on failure.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    load context -> validate campaign/coupon/eligibility -> quote -> atomically reserve -> redeem after order success or release on failure
+
+### Complete Code Implementation
+
+- [Models](./models/)
+- [Services](./services/)
+- [Strategies](./strategies/)
+- [Demonstration](./main.py)
+- [Tests](./tests/)
+
+Run:
+
+    python "solutions/coupon-management-and-distribution-platform/main.py"
+    python -m unittest discover -s "solutions/coupon-management-and-distribution-platform/tests" -t "solutions/coupon-management-and-distribution-platform" -v
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Coupon stacking and category exclusions
+- Referral and campaign-budget rules
+- Fraud scoring and event-driven analytics
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain reservation-versus-redemption, concurrent supply limits, exact money, idempotency, and checkout failure compensation.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: load context -> validate campaign/coupon/eligibility -> quote -> atomically reserve -> redeem after order success or release on failure.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 This is a beginner-friendly, working Python design for creating coupon
 campaigns, selecting eligible users, distributing unique coupon codes, enforcing
 supply and per-user limits, reserving coupons during checkout, calculating
@@ -681,7 +799,7 @@ A practical evolution path is:
 - Bots attempted to enumerate or hoard codes.
 
 These require durable idempotency, transactions/sagas, reconciliation, policy
-versioning, abuse prevention, and operational toolingâ€”not merely more classes.
+versioning, abuse prevention, and operational toolingÃ¢â‚¬â€not merely more classes.
 
 ## 27. Suggested learning exercises
 
@@ -729,4 +847,6 @@ A strong explanation usually follows this order:
 10. Evolve toward database constraints, TTL reservations, policies, and events.
 
 Strong LLD is demonstrated through ownership, invariants, transitions, and
-failure handlingâ€”not by memorizing a class diagram.
+failure handlingÃ¢â‚¬â€not by memorizing a class diagram.
+
+</details>

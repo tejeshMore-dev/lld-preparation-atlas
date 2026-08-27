@@ -1,5 +1,123 @@
 # Cab Booking Low-Level Design
 
+Match one available driver to a rider, progress the trip, calculate fare, and settle payment without assigning a driver twice.
+
+## Understanding the Problem
+
+Match one available driver to a rider, progress the trip, calculate fare, and settle payment without assigning a driver twice.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- Is driver acceptance required or is assignment immediate?
+- Which vehicle types and matching radius apply?
+- Is fare estimated before the ride and finalized afterward?
+- When may riders or drivers cancel?
+- How are live locations supplied?
+
+### Final Requirements
+
+1. Find nearby eligible drivers.
+2. Estimate fare and create a ride request.
+3. Atomically assign one available driver.
+4. Progress assigned, in-progress, completed, and cancelled states.
+5. Charge the completed ride and record rating/history.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| Rider | Owns customer identity and ride history. |
+| Driver | Owns availability, location, rating, and vehicle. |
+| Ride | Owns assignment, route, fare, and lifecycle. |
+| MatchingStrategy | Ranks eligible drivers. |
+| DistanceStrategy | Calculates route/proximity distance. |
+| FareStrategy | Calculates estimate and final fare. |
+| PaymentGateway | Isolates payment processing. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Keep Driver availability separate from Ride lifecycle and inject matching/fare policies.
+
+### Great Solution
+
+Use conditional driver claim, idempotent ride requests and payment, offer timeout/retry semantics, and explicit failure recovery.
+
+### Final Class Design
+
+The critical collaboration is: request ride -> find candidates -> estimate -> atomically claim driver -> start -> complete -> calculate fare -> pay -> release driver.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    request ride -> find candidates -> estimate -> atomically claim driver -> start -> complete -> calculate fare -> pay -> release driver
+
+### Complete Code Implementation
+
+- [Models](./models/)
+- [Services](./services/)
+- [Strategies](./strategies/)
+- [Demonstration](./main.py)
+- [Tests](./tests/)
+
+Run:
+
+    python "solutions/cab-booking/main.py"
+    python -m unittest discover -s "solutions/cab-booking/tests" -t "solutions/cab-booking" -v
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Driver offers with timeout
+- Pooling and scheduled rides
+- Geospatial indexing and live-location streams
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain conditional driver assignment, stale location, offer races, idempotency, and payment/release ordering.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: request ride -> find candidates -> estimate -> atomically claim driver -> start -> complete -> calculate fare -> pay -> release driver.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 This is a beginner-friendly, working Python design for an on-demand cab service.
 It covers riders, drivers, vehicles, locations, nearby-cab discovery, driver
 matching, fare estimates, surge pricing, dispatch concurrency, trip transitions,
@@ -274,8 +392,8 @@ the source used to resolve registered actors.
 longitude on a spherical Earth approximation:
 
 ```text
-a = sinÂ²(delta-latitude / 2)
-    + cos(start-latitude) * cos(end-latitude) * sinÂ²(delta-longitude / 2)
+a = sinÃ‚Â²(delta-latitude / 2)
+    + cos(start-latitude) * cos(end-latitude) * sinÃ‚Â²(delta-longitude / 2)
 
 distance = 2 * earth-radius * asin(sqrt(a))
 ```
@@ -621,7 +739,7 @@ A practical evolution path is:
 - Dispatch crashed after claiming a driver but before updating the ride.
 
 These require durable state, idempotency, leases/fencing, event ordering,
-reconciliation, and compensationâ€”not merely more classes.
+reconciliation, and compensationÃ¢â‚¬â€not merely more classes.
 
 ## 24. Suggested learning exercises
 
@@ -669,4 +787,6 @@ A strong explanation usually follows this order:
 10. Evolve toward geospatial partitions, leases, routing, and event-driven flows.
 
 Strong LLD is shown through ownership, invariants, transitions, and failure
-handlingâ€”not by memorizing a class diagram.
+handlingÃ¢â‚¬â€not by memorizing a class diagram.
+
+</details>

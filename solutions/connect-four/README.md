@@ -1,5 +1,113 @@
 # Connect Four Low-Level Design
 
+Accept gravity-based moves from two players, enforce turns, and detect the first horizontal, vertical, or diagonal line of the target length.
+
+## Understanding the Problem
+
+Accept gravity-based moves from two players, enforce turns, and detect the first horizontal, vertical, or diagonal line of the target length.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- Are dimensions and connect length configurable?
+- Is undo or replay required?
+- Can commands arrive concurrently?
+- Is an AI player in scope?
+- How should a draw be reported?
+
+### Final Requirements
+
+1. Create a validated board and two distinct players.
+2. Drop pieces into non-full columns using gravity.
+3. Alternate turns only after accepted moves.
+4. Detect all four winning directions from the latest move.
+5. Reject moves after win or draw and preserve history.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| Position | Immutable row and column. |
+| Player | Identity and distinct piece. |
+| Board | Owns grid, gravity, and capacity. |
+| Move | Records player, position, and sequence. |
+| Game | Owns turn, status, winner, and history. |
+| WinPolicy | Evaluates the latest accepted move. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Put placement inside Board and turn/lifecycle rules inside Game.
+
+### Great Solution
+
+Use configurable connect-K policy, immutable snapshots/history, expected move versions, and serialized per-game commands.
+
+### Final Class Design
+
+The critical collaboration is: validate game and player -> Board.place -> record Move -> evaluate latest position -> finish or switch player.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    validate game and player -> Board.place -> record Move -> evaluate latest position -> finish or switch player
+
+### Complete Code Implementation
+
+This repository currently treats this problem as a Markdown design exercise. The contracts, algorithms, atomic boundaries, pseudocode, and complete verification plan are in the detailed reference below. Implement the entity that owns the main invariant first, then the coordinating service.
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Connect-K and different board sizes
+- Undo, replay, and persistence
+- AI strategy and network spectators
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain atomic per-game commands, stale move versions, replay, and why directional scanning is preferable to whole-board rescans.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: validate game and player -> Board.place -> record Move -> evaluate latest position -> finish or switch player.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 Design a two-player game where pieces fall to the lowest free cell and four aligned pieces end the game.
 
 ## 1. Understanding the problem
@@ -139,7 +247,7 @@ Suggested flow:
 
 1. Require IN_PROGRESS.
 2. Require the active player.
-3. Ask Board to place the player’s piece.
+3. Ask Board to place the playerâ€™s piece.
 4. Append a Move.
 5. Ask WinPolicy whether the position wins.
 6. Mark WON, mark DRAW, or advance the turn.
@@ -284,3 +392,5 @@ Discuss configurable rules, atomic command processing, optimistic versions, repl
 5. Implement play() as one transition.
 6. Test every win direction and an invalid move.
 7. Add concurrency or AI only as a follow-up seam.
+
+</details>

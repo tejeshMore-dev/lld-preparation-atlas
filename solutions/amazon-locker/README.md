@@ -1,5 +1,113 @@
 # Amazon Locker Low-Level Design
 
+Assign a fitting locker to a package, secure pickup with an expiring credential, and release capacity after pickup, return, or expiry.
+
+## Understanding the Problem
+
+Assign a fitting locker to a package, secure pickup with an expiring credential, and release capacity after pickup, return, or expiry.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- Is assignment made before or during delivery?
+- Which package and locker sizes exist?
+- How long is a pickup code valid?
+- Are customer returns supported?
+- How are hardware failures confirmed or reconciled?
+
+### Final Requirements
+
+1. Allocate the smallest fitting available locker.
+2. Deposit a package and activate a pickup credential.
+3. Validate code and expiry during pickup.
+4. Release expired or completed allocations exactly once.
+5. Exclude lockers that are occupied or out of service.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| Package | Tracks shipment identity, size, owner, and state. |
+| Locker | Protects compartment fit and availability. |
+| LockerLocation | Groups lockers and provides the allocation boundary. |
+| Allocation | Owns package-locker assignment, code, expiry, and lifecycle. |
+| AllocationPolicy | Chooses a fitting locker. |
+| AccessController | Adapts physical locker hardware. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Let Locker own occupancy and Allocation own code and expiry rules.
+
+### Great Solution
+
+Use an atomic package-and-locker claim, hashed credentials, injected time/code generation, and hardware confirmation with reconciliation.
+
+### Final Class Design
+
+The critical collaboration is: select fitting locker -> claim locker and create allocation -> open for deposit -> activate -> validate code -> open for pickup -> complete and release.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    select fitting locker -> claim locker and create allocation -> open for deposit -> activate -> validate code -> open for pickup -> complete and release
+
+### Complete Code Implementation
+
+This repository currently treats this problem as a Markdown design exercise. The contracts, algorithms, atomic boundaries, pseudocode, and complete verification plan are in the detailed reference below. Implement the entity that owns the main invariant first, then the coordinating service.
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Nearby-location selection
+- Multi-package orders and returns
+- Sensors, staff override, and failed-attempt lockout
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain pickup-versus-expiry races, hardware/database failure ordering, credential security, and conditional allocation.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: select fitting locker -> claim locker and create allocation -> open for deposit -> activate -> validate code -> open for pickup -> complete and release.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 Design a last-mile locker system that assigns a fitting compartment, supports secure deposit and pickup, and releases expired allocations.
 
 ## 1. Understanding the problem
@@ -315,3 +423,5 @@ Discuss atomic allocation, pickup-versus-expiry races, hardware failure, idempot
 4. Walk deposit and pickup before coding.
 5. Implement smallest-fit allocation plus success and expiry tests.
 6. Extend toward hardware and multi-instance concurrency only after the core is coherent.
+
+</details>

@@ -1,5 +1,122 @@
-# Elevator System Low-Level Design
+# Elevator Low-Level Design
 
+Accept hall and car requests, choose a suitable elevator, and move each car through valid direction, stop, door, and service states.
+
+## Understanding the Problem
+
+Accept hall and car requests, choose a suitable elevator, and move each car through valid direction, stop, door, and service states.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- How many floors and cars exist?
+- Are hall direction and internal destination distinct?
+- Which scheduling goal matters most?
+- Is capacity enforced?
+- How are out-of-service and emergency modes handled?
+
+### Final Requirements
+
+1. Accept hall calls and internal destinations.
+2. Assign hall calls using a direction-aware scheduling policy.
+3. Move cars one floor per deterministic tick.
+4. Serve stops in LOOK/SCAN-style order.
+5. Protect door, capacity, floor-range, and service invariants.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| ElevatorSystem | Receives requests, dispatches, and advances the simulation. |
+| ElevatorCar | Owns floor, direction, doors, capacity, and stops. |
+| HallRequest | Represents floor plus desired direction. |
+| CarRequest | Represents an internal destination. |
+| SchedulingStrategy | Chooses a car for a hall call. |
+| ElevatorEvent | Reports observable state changes. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Store distinct up/down stop sets and choose a direction-aware car rather than the absolute nearest car.
+
+### Great Solution
+
+Model request identity/type, coalesce duplicates, use LOOK ordering, isolate scheduling, and serialize each car's state transitions.
+
+### Final Class Design
+
+The critical collaboration is: accept hall call -> select/assign car -> record stops -> tick with doors closed -> arrive/open/complete -> choose next direction.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    accept hall call -> select/assign car -> record stops -> tick with doors closed -> arrive/open/complete -> choose next direction
+
+### Complete Code Implementation
+
+- [Models](./models/)
+- [Services](./services/)
+- [Strategies](./strategies/)
+- [Demonstration](./main.py)
+- [Tests](./tests/)
+
+Run:
+
+    python "solutions/elevator/main.py"
+    python -m unittest discover -s "solutions/elevator/tests" -t "solutions/elevator" -v
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Priority floors and express zones
+- Request cancellation and aging
+- Destination dispatch, maintenance, and emergency control
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain scheduling trade-offs, opposite-direction calls, starvation, per-car coordination, and the boundary to real hardware controllers.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: accept hall call -> select/assign car -> record stops -> tick with doors closed -> arrive/open/complete -> choose next direction.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 This project is a beginner-friendly, working implementation of a multi-elevator
 controller. It demonstrates elevator cars, hall buttons, internal floor
 selection, direction-aware scheduling, pending requests, step-by-step movement,
@@ -337,7 +454,7 @@ events = system.tick()
 ```
 
 `run_until_idle()` repeatedly ticks until no active request, stop, or open door
-remains. `max_ticks` protects tests and demos from infinite loopsâ€”for example,
+remains. `max_ticks` protects tests and demos from infinite loopsÃ¢â‚¬â€for example,
 if all cars remain out of service while a hall request is pending.
 
 This deterministic simulation is easy to test because it does not depend on
@@ -567,3 +684,5 @@ When presenting this design:
 
 The strongest LLD discussion explains why each state and class exists, not only
 which pattern names appear in the diagram.
+
+</details>

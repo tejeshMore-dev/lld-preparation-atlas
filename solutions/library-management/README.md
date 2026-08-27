@@ -1,5 +1,123 @@
 # Library Management Low-Level Design
 
+Search titles, lend physical copies, queue reservations, return items, and calculate fines while respecting member and copy rules.
+
+## Understanding the Problem
+
+Search titles, lend physical copies, queue reservations, return items, and calculate fines while respecting member and copy rules.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- Are reservations title-level or copy-level?
+- Which member types and borrowing limits exist?
+- How are due dates and fines calculated?
+- Can loans be renewed?
+- How does a returned copy advance the reservation queue?
+
+### Final Requirements
+
+1. Search a catalog by common fields.
+2. Borrow an available physical copy.
+3. Return a loan and calculate overdue fine.
+4. Create, cancel, and advance reservations.
+5. Apply member eligibility and borrowing limits.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| Book | Title-level bibliographic record. |
+| BookItem | One physical copy and its state. |
+| Member | Owns account eligibility, loans, and limits. |
+| Loan | Owns checkout, due date, and return. |
+| Reservation | Owns wait/ready lifecycle. |
+| FineStrategy | Calculates overdue charge. |
+| LibraryService | Coordinates borrow, return, and reserve. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Distinguish Book from BookItem and put physical availability on the copy.
+
+### Great Solution
+
+Atomically create Loan with copy mutation, advance reservation queues on return, inject fine/member policies, and isolate notification events.
+
+### Final Class Design
+
+The critical collaboration is: validate member -> validate copy/reservation priority -> atomically mark loaned and create Loan -> return -> close loan/fine -> make available or ready next reservation.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    validate member -> validate copy/reservation priority -> atomically mark loaned and create Loan -> return -> close loan/fine -> make available or ready next reservation
+
+### Complete Code Implementation
+
+- [Models](./models/)
+- [Services](./services/)
+- [Strategies](./strategies/)
+- [Demonstration](./main.py)
+- [Tests](./tests/)
+
+Run:
+
+    python "solutions/library-management/main.py"
+    python -m unittest discover -s "solutions/library-management/tests" -t "solutions/library-management" -v
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Renewals and lost-item charges
+- Branches and inter-library transfers
+- E-books and waitlist notifications
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain copy/loan atomicity, reservation fairness, notification failure, concurrent borrowing, and persistence constraints.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: validate member -> validate copy/reservation priority -> atomically mark loaned and create Loan -> return -> close loan/fine -> make available or ready next reservation.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 This project is a beginner-friendly, working implementation of a library
 management system. It demonstrates how books, physical copies, members, loans,
 reservations, fines, notifications, and business rules can be modeled with
@@ -100,7 +218,7 @@ difference is a classic LLD interview insight.
 1. Only active members can borrow or reserve.
 2. Students may borrow at most 5 books for 14 days.
 3. Faculty may borrow at most 20 books for 30 days.
-4. Only an available copyâ€”or a copy reserved for that memberâ€”can be borrowed.
+4. Only an available copyÃ¢â‚¬â€or a copy reserved for that memberÃ¢â‚¬â€can be borrowed.
 5. A member cannot create duplicate active reservations for the same book.
 6. A currently available book does not need a reservation.
 7. Reservations are processed in first-in, first-out order.
@@ -223,7 +341,7 @@ behaves according to the concrete object.
 ### Composition
 
 A `Loan` contains references to a `Member` and `BookItem`. A `BookItem` contains
-a `Book`. These â€œhas-aâ€ relationships are composition/association rather than
+a `Book`. These Ã¢â‚¬Å“has-aÃ¢â‚¬Â relationships are composition/association rather than
 inheritance.
 
 ## 9. Search workflow
@@ -382,8 +500,8 @@ The service emits events such as:
 - `FINE_PAID`
 
 Observers react without the core workflow directly calling email/logger code.
-This reduces coupling and allows new reactionsâ€”analytics, audit storage, push
-notificationsâ€”to be added independently.
+This reduces coupling and allows new reactionsÃ¢â‚¬â€analytics, audit storage, push
+notificationsÃ¢â‚¬â€to be added independently.
 
 The current observers run synchronously. If an observer were slow or failed, it
 could affect the request. Production systems often publish events to a durable
@@ -555,3 +673,5 @@ When presenting this design:
 
 The best LLD explanation connects every class to a requirement and every
 pattern to a real source of variation.
+
+</details>

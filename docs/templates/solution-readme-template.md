@@ -1,29 +1,29 @@
 # Solution Guide Template
 
-Use this structure for a complete problem walkthrough. Remove a section only
-when it genuinely does not apply.
+Use this public-style teaching flow for every complete problem walkthrough.
+Remove a subsection only when it genuinely does not apply.
 
     # <Problem> Low-Level Design
 
-    ## 1. Understanding the problem
-    ## 2. Clarifying questions
-    ## 3. Final requirements
-    ## 4. Invariants
-    ## 5. Core model and relationships
-    ## 6. State and lifecycle
-    ## 7. Class design
-    ## 8. Critical workflow one
-    ## 9. Critical workflow two
-    ## 10. Patterns and principles
-    ## 11. Failure handling
-    ## 12. Concurrency and consistency
-    ## 13. Complexity
-    ## 14. Verification and tests
-    ## 15. Code map or implementation contracts
-    ## 16. Extensibility
-    ## 17. Trade-offs
-    ## 18. Interview expectations
-    ## 19. Interview walkthrough
+    ## Understanding the Problem
+    ## Requirements
+    ### Clarifying Questions
+    ### Final Requirements
+    ## Core Entities and Relationships
+    ## Class Design
+    ### Good Solution
+    ### Great Solution
+    ### Final Class Design
+    ## Implementation
+    ### Complete Code Implementation
+    ## Verification
+    ## Extensibility
+    ## What Is Expected at Each Level?
+    ### Junior
+    ### Mid-level
+    ### Senior
+    ## Interview Walkthrough
+    ## Detailed Design Reference
 
 Every guide must answer:
 

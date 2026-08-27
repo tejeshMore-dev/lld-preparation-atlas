@@ -1,5 +1,124 @@
 # Parking Lot Low-Level Design
 
+Assign a compatible spot, issue a parking ticket, calculate the exit fee, and release the spot only after successful payment.
+
+## Understanding the Problem
+
+Assign a compatible spot, issue a parking ticket, calculate the exit fee, and release the spot only after successful payment.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- Which vehicle and spot sizes exist?
+- Can small vehicles use larger spots?
+- Is allocation nearest-first or best-fit?
+- Which pricing and payment rules apply?
+- Can several entrances operate concurrently?
+
+### Final Requirements
+
+1. Support several floors and typed spots.
+2. Allocate one compatible available spot.
+3. Prevent duplicate active vehicles and spot assignment.
+4. Issue an active ticket and calculate a fee.
+5. Process payment before marking paid and vacating.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| Vehicle | License plate and vehicle type. |
+| ParkingSpot | Owns fit and occupancy. |
+| ParkingFloor | Groups and validates spots. |
+| Ticket | Records vehicle, spot, time, and status. |
+| ParkingLot | Coordinates entry and exit. |
+| AllocationStrategy | Chooses a compatible spot. |
+| PricingStrategy | Calculates a fee. |
+| PaymentProcessor | Isolates payment. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Let ParkingSpot own compatibility/occupancy and inject allocation and pricing policies.
+
+### Great Solution
+
+Make vehicle and spot claim atomic, model payment retry/idempotency, use unique persistent constraints, and remove network I/O from long-held locks.
+
+### Final Class Design
+
+The critical collaboration is: reject duplicate -> select compatible spot -> atomically assign/create ticket -> compute fee -> pay -> vacate/mark paid or keep active.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    reject duplicate -> select compatible spot -> atomically assign/create ticket -> compute fee -> pay -> vacate/mark paid or keep active
+
+### Complete Code Implementation
+
+- [Models](./models/)
+- [Services](./services/)
+- [Strategies](./strategies/)
+- [Demonstration](./main.py)
+- [Tests](./tests/)
+
+Run:
+
+    python "solutions/parking-lot/main.py"
+    python -m unittest discover -s "solutions/parking-lot/tests" -t "solutions/parking-lot" -v
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Multiple entrances and per-entrance distance
+- Reservations, EV charging, and display boards
+- Lost tickets and dynamic pricing
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain atomic allocation, lock granularity, payment failure ordering, idempotent exit, and distributed unique constraints.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: reject duplicate -> select compatible spot -> atomically assign/create ticket -> compute fee -> pay -> vacate/mark paid or keep active.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 Design a parking lot that assigns a compatible spot, tracks the parking session, collects payment, and releases the spot safely.
 
 This guide is interview-first: agree on scope, identify invariants, assign responsibilities, walk the workflows, and only then discuss patterns or production extensions.
@@ -468,12 +587,14 @@ Also discuss:
 
 A concise explanation can sound like this:
 
-1. “I will support multi-floor, drive-in parking for three vehicle and spot sizes.”
-2. “The main invariant is one active ticket per vehicle and one vehicle per spot.”
-3. “ParkingSpot owns compatibility and occupancy because it has the required state.”
-4. “ParkingLot coordinates the atomic entry and exit use cases.”
-5. “Allocation and pricing are strategies because those are stated variations.”
-6. “I will implement entry first, then successful and failed exit.”
-7. “For multiple processes, I would replace the in-memory lock with conditional persistence and unique active-assignment constraints.”
+1. â€œI will support multi-floor, drive-in parking for three vehicle and spot sizes.â€
+2. â€œThe main invariant is one active ticket per vehicle and one vehicle per spot.â€
+3. â€œParkingSpot owns compatibility and occupancy because it has the required state.â€
+4. â€œParkingLot coordinates the atomic entry and exit use cases.â€
+5. â€œAllocation and pricing are strategies because those are stated variations.â€
+6. â€œI will implement entry first, then successful and failed exit.â€
+7. â€œFor multiple processes, I would replace the in-memory lock with conditional persistence and unique active-assignment constraints.â€
 
 That is enough structure to begin coding while leaving room for follow-up requirements.
+
+</details>

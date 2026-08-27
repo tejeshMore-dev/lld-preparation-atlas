@@ -1,5 +1,124 @@
 # Splitwise Low-Level Design
 
+Record shared expenses, compute exact participant shares, maintain pairwise net balances, and settle debts without rounding drift.
+
+## Understanding the Problem
+
+Record shared expenses, compute exact participant shares, maintain pairwise net balances, and settle debts without rounding drift.
+
+The design starts with the business invariant and the critical workflow. Named patterns come later, only where a requirement creates a real variation or boundary.
+
+## Requirements
+
+### Clarifying Questions
+
+- Which split types are supported?
+- Is one currency enough per group?
+- Can expenses be edited or deleted?
+- Is debt simplification required?
+- Are settlements recorded internally or paid externally?
+
+### Final Requirements
+
+1. Create users and groups.
+2. Add equal, exact, and percentage expenses.
+3. Require shares to equal the expense exactly.
+4. Maintain antisymmetric pairwise balances.
+5. Record partial/full settlements and provide simplified suggestions.
+
+The detailed reference below records additional assumptions, exclusions, validation rules, and edge cases.
+
+## Core Entities and Relationships
+
+| Entity | Responsibility |
+|---|---|
+| User | Participant identity. |
+| Group | Membership and expense history. |
+| Expense | Immutable payer, total, splits, and description. |
+| Split | One participant's exact share. |
+| SplitStrategy | Calculates and validates shares. |
+| BalanceSheet | Owns pairwise net ledger. |
+| Settlement | Records repayment. |
+| SplitwiseService | Coordinates expense and settlement workflows. |
+
+The object that owns mutable state also owns the invariant protecting that state. Coordinating services load collaborators and sequence the use case; they do not bypass entity behavior.
+
+## Class Design
+
+### Good Solution
+
+Use exact Money and isolate equal/exact/percentage calculations behind strategies.
+
+### Great Solution
+
+Make expense plus ledger update atomic and idempotent, preserve immutable history, and treat debt simplification as a derived view.
+
+### Final Class Design
+
+The critical collaboration is: validate group/participants -> calculate exact splits -> create Expense -> atomically update antisymmetric balances -> record settlement or derive simplification.
+
+The full class map, state transitions, method contracts, and design rationale are preserved in the detailed reference below.
+
+## Implementation
+
+Implement one vertical slice before filling every class:
+
+    validate group/participants -> calculate exact splits -> create Expense -> atomically update antisymmetric balances -> record settlement or derive simplification
+
+### Complete Code Implementation
+
+- [Models](./models/)
+- [Services](./services/)
+- [Strategies](./strategies/)
+- [Demonstration](./main.py)
+- [Tests](./tests/)
+
+Run:
+
+    python "solutions/splitwise/main.py"
+    python -m unittest discover -s "solutions/splitwise/tests" -t "solutions/splitwise" -v
+
+## Verification
+
+Verify the happy path, the highest-risk rejection, and state after failure. Then force two competing operations at the atomic boundary and assert the invariant, not thread timing.
+
+The detailed reference lists problem-specific test cases and complexity.
+
+## Extensibility
+
+- Multi-currency groups
+- Recurring/editable expenses with audit history
+- Payment integration and optimized settlement
+
+Each extension should enter through a named policy, boundary, or lifecycle change rather than a new conditional inside the main workflow.
+
+## What Is Expected at Each Level?
+
+### Junior
+
+Deliver the agreed core workflow with coherent entities, valid state changes, and straightforward failure handling.
+
+### Mid-level
+
+Make invariants explicit, isolate real variations, cover failure paths with tests, and discuss the relevant concurrency boundary.
+
+### Senior
+
+Explain rounding remainder, immutable history, ledger invariants, concurrent/idempotent expense creation, settlement versions, and simplification trade-offs.
+
+## Interview Walkthrough
+
+1. Clarify the version-one scope and exclusions.
+2. State the invariants before drawing classes.
+3. Introduce the core entities and walk: validate group/participants -> calculate exact splits -> create Expense -> atomically update antisymmetric balances -> record settlement or derive simplification.
+4. Compare the good and great solution based on the stated requirements.
+5. Implement a complete vertical slice and one failure test.
+6. Handle a realistic follow-up through an explicit extension seam.
+
+## Detailed Design Reference
+
+<details>
+<summary>Open the implementation-specific deep dive</summary>
 This project is a beginner-friendly, working implementation of a shared-expense
 system similar to Splitwise. It shows how to model users, groups, expenses,
 multiple split rules, balances, settlements, and debt simplification using
@@ -601,3 +720,5 @@ When presenting this design:
 
 The strongest LLD explanation connects every class and pattern to a concrete
 business rule rather than only naming diagrams or principles.
+
+</details>
